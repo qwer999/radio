@@ -1,10 +1,22 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import StationList from './components/StationList';
+import ExcludedList from './components/ExcludedList';
+import StationCard from './components/StationCard';
 import { radioStations as defaultStations } from './assets/radioStations';
 import AudioPlayer from './AudioPlayer';
 import './App.css';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, useDroppable, DragOverlay } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, rectSortingStrategy } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import {
+  DndContext,
+  pointerWithin,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  useDroppable,
+  DragOverlay,
+} from '@dnd-kit/core';
+import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 
 // Empty drop area component
 const DroppableArea = ({ id }) => {
@@ -24,84 +36,6 @@ const DroppableArea = ({ id }) => {
       className="border-2 border-dashed border-gray-700 rounded-lg p-4 text-center text-gray-500 h-24 flex items-center justify-center transition-colors duration-200 select-none"
     >
       여기로 방송국을 드래그하여 제외 목록에 추가할 수 있습니다
-    </div>
-  );
-};
-
-// StationItem component for drag overlay (without sortable functionality)
-const StationItem = ({ station, isSelected, isPlaying, isPaused, isExcluded = false }) => {
-  let statusEmoji = '';
-  if (isSelected) {
-    if (isPlaying) {
-      statusEmoji = '🔊';
-    } else if (isPaused) {
-      statusEmoji = '⏸️';
-    }
-  }
-
-  const bgClass = isExcluded ? 'bg-gray-700' : 'bg-gray-800';
-
-  return (
-    <div
-      className={`flex flex-col items-center justify-center ${bgClass} select-none rounded-lg p-3 border-2 border-blue-500 shadow-xl`}
-      style={{ width: '100%', height: '100%' }}
-    >
-      <span className="w-8 h-8 flex items-center justify-center rounded bg-gray-700 mb-2">≡</span>
-      <span className={`font-medium select-none text-center ${isExcluded ? 'text-gray-400' : ''}`}>{station.name}</span>
-      {statusEmoji && <span className="mt-1 select-none">{statusEmoji}</span>}
-      <span className="text-xs text-gray-400 mt-1 select-none">{station.type.toUpperCase()}</span>
-    </div>
-  );
-};
-
-// SortableItem component with card style
-const SortableItem = ({ station, isSelected, isPlaying, isPaused, onSelect, isExcluded = false }) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: station.id,
-    transition: {
-      duration: 150, // milliseconds
-      easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
-    },
-  });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    zIndex: isDragging ? 50 : 'auto',
-    // Effects while dragging
-    ...(isDragging ? { rotate: '2deg', scale: '1.05' } : {}),
-    // Grid item size
-    width: '100%',
-    height: '100%',
-  };
-
-  let statusEmoji = '';
-  if (isSelected) {
-    if (isPlaying) {
-      statusEmoji = '🔊';
-    } else if (isPaused) {
-      statusEmoji = '⏸️';
-    }
-  }
-
-  const bgClass = isExcluded ? 'bg-gray-700 hover:bg-gray-600' : 'hover:bg-gray-800';
-  const selectedClass = isSelected && !isExcluded ? 'bg-gray-800' : '';
-  // Style during drag
-  const draggingClass = isDragging ? 'bg-blue-900 shadow-xl opacity-90 border-blue-500' : '';
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`flex flex-col items-center justify-center cursor-pointer ${bgClass} ${selectedClass} ${draggingClass} select-none rounded-lg p-3 m-1 border border-gray-700 bg-red-200`}
-      onClick={() => !isExcluded && onSelect(station)}
-      {...attributes}
-      {...listeners}
-    >
-      <span className="w-8 h-8 flex items-center justify-center cursor-grab active:cursor-grabbing rounded bg-gray-700 mb-2">≡</span>
-      <span className={`font-medium select-none text-center ${isExcluded ? 'text-gray-400' : ''}`}>{station.name}</span>
-      {statusEmoji && <span className="mt-1 select-none">{statusEmoji}</span>}
-      <span className="text-xs text-gray-400 mt-1 select-none">{station.type.toUpperCase()}</span>
     </div>
   );
 };
@@ -153,8 +87,14 @@ function App() {
     useSensor(PointerSensor, {
       // Press delay configuration
       activationConstraint: {
-        delay: 250, // 250ms delay before dragging starts
-        tolerance: 5, // 5px tolerance
+        distance: 8, // 8px 이동 후 드래그 시작
+      },
+    }),
+    useSensor(TouchSensor, {
+      // Touch sensor configuration for mobile
+      activationConstraint: {
+        delay: 0, // 500ms 동안 터치 유지 후 드래그 시작 (더 길게)
+        tolerance: 8, // 8px 이내의 움직임은 허용 (더 넉넉하게)
       },
     }),
     useSensor(KeyboardSensor, {
@@ -167,6 +107,9 @@ function App() {
     const id = event.active.id;
     setActiveId(id);
 
+    // 모바일에서 드래그 중 스크롤 방지
+    document.body.classList.add('no-scroll');
+
     // Find the station being dragged
     const draggedStation = [...stations, ...excludedStations].find((s) => s.id === id);
     if (draggedStation) {
@@ -178,6 +121,8 @@ function App() {
   const handleDragCancel = () => {
     setActiveId(null);
     setActiveStation(null);
+    // 스크롤 복원
+    document.body.classList.remove('no-scroll');
   };
 
   // Drag and drop end handler
@@ -186,13 +131,35 @@ function App() {
     setActiveId(null);
     setActiveStation(null);
 
+    // 스크롤 복원
+    document.body.classList.remove('no-scroll');
+
     if (!over) return;
 
     const activeId = active.id;
     const overId = over.id;
 
+    // Do nothing if it's the same item
+    if (activeId === overId) return;
+
+    // 같은 목록 내에서 순서 변경 (정확한 인덱스 계산)
+    if (stations.some((s) => s.id === activeId) && stations.some((s) => s.id === overId)) {
+      setStations((items) => {
+        const oldIndex = items.findIndex((item) => item.id === activeId);
+        const newIndex = items.findIndex((item) => item.id === overId);
+
+        // 정확한 드롭 위치 계산
+        const adjustedNewIndex = oldIndex < newIndex ? newIndex : newIndex;
+
+        const newArray = arrayMove(items, oldIndex, adjustedNewIndex);
+        localStorage.setItem('radioStations', JSON.stringify(newArray));
+        return newArray;
+      });
+      return;
+    }
+
     // Dropped to the exclusion area
-    if (overId === 'excluded-drop-area') {
+    if (overId === 'excluded-drop-area' || overId === 'station-exclude-drop-area') {
       const stationToMove = stations.find((s) => s.id === activeId);
 
       // If the currently selected station is moved to exclusion list, select another station
@@ -284,6 +251,22 @@ function App() {
         const newIndex = targetIndex >= 0 ? targetIndex : items.length;
         const newItems = [...items];
         newItems.splice(newIndex, 0, stationToMove);
+        localStorage.setItem('radioStations', JSON.stringify(newItems));
+        return newItems;
+      });
+    }
+    // Move from exclusion list to station list drop area
+    else if (isActiveInExcluded && overId === 'station-list-drop-area') {
+      const stationToMove = excludedStations.find((s) => s.id === activeId);
+
+      setExcludedStations((items) => {
+        const newItems = items.filter((item) => item.id !== activeId);
+        localStorage.setItem('excludedStations', JSON.stringify(newItems));
+        return newItems;
+      });
+
+      setStations((items) => {
+        const newItems = [...items, stationToMove];
         localStorage.setItem('radioStations', JSON.stringify(newItems));
         return newItems;
       });
@@ -471,94 +454,62 @@ function App() {
     });
   };
 
+  // ...existing code...
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center p-4 select-none">
+    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center p-4 select-none pb-40">
       <h1 className="text-2xl font-bold mb-4">대한민국 인터넷 라디오</h1>
+
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCenter}
+        collisionDetection={pointerWithin}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
-        <div className="w-full max-w-md mb-4">
-          <h2 className="text-lg font-semibold mb-2 border-b border-gray-700 pb-1">재생 목록</h2>
-          <SortableContext items={stations.map((s) => s.id)} strategy={rectSortingStrategy}>
-            <div className="grid grid-cols-3 gap-2">
-              {stations.map((station) => (
-                <SortableItem
-                  key={station.id}
-                  station={station}
-                  isSelected={selected.id === station.id}
-                  isPlaying={selected.id === station.id && isPlaying}
-                  isPaused={selected.id === station.id && isPaused}
-                  onSelect={handleSelect}
-                />
-              ))}
-            </div>
-          </SortableContext>
-          <div className="text-xs text-gray-400 mt-2 p-2 bg-gray-800 rounded">
-            드래그하여 방송국 순서를 변경하거나, 아래 제외 목록으로 이동할 수 있습니다.
-          </div>
-        </div>
-        <div className="w-full max-w-md mb-6">
-          <h2 className="text-lg font-semibold mb-2 border-b border-gray-700 pb-1 text-gray-400">제외된 방송국</h2>
-          {excludedStations.length > 0 ? (
-            <SortableContext items={excludedStations.map((s) => s.id)} strategy={rectSortingStrategy}>
-              <div className="grid grid-cols-3 gap-2">
-                {excludedStations.map((station) => (
-                  <SortableItem key={station.id} station={station} isSelected={false} isExcluded={true} onSelect={() => restoreStation(station)} />
-                ))}
-              </div>
-            </SortableContext>
-          ) : (
-            <DroppableArea id="excluded-drop-area" />
-          )}
-          <div className="text-xs text-gray-400 mt-2 p-2 bg-gray-700 rounded">
-            제외된 방송국은 재생되지 않습니다. 위 재생 목록으로 드래그하여 복원할 수 있습니다.
-          </div>
-        </div>
+        <StationList stations={stations} selectedId={selected?.id} onSelect={handleSelect} />
+        <ExcludedList stations={excludedStations} onRestore={restoreStation} />
 
         <DragOverlay adjustScale={true} zIndex={100}>
           {activeStation ? (
-            <StationItem
+            <StationCard
               station={activeStation}
-              isSelected={selected.id === activeStation.id}
-              isPlaying={selected.id === activeStation.id && isPlaying}
-              isPaused={selected.id === activeStation.id && isPaused}
-              isExcluded={excludedStations.some((s) => s.id === activeStation.id)}
+              selected={selected?.id === activeStation.id}
+              excluded={excludedStations.some((s) => s.id === activeStation.id)}
+              isDragOverlay={true}
+              onClick={() => {}}
             />
           ) : null}
         </DragOverlay>
       </DndContext>
-      <div className="w-full max-w-md bg-gray-800 rounded p-4">
-        <h2 className="text-lg font-semibold mb-2">{selected.name} 재생</h2>
-        <p className="text-xs mb-2">스트림 타입: {selected.type}</p>
-        {loading && <p className="text-yellow-400">스트림 정보를 불러오는 중...</p>}
-        {error && <p className="text-red-400">{error}</p>}
-        {streamUrl && <AudioPlayer src={streamUrl} nowPlaying={nowPlaying} onPlaybackStateChange={handlePlaybackStateChange} />}
 
-        {/* 채널 이동 버튼 (항상 표시) */}
-        <div className="flex justify-between mt-3">
-          <button onClick={prevChannel} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-            이전 채널
-          </button>
+      {/* 플레이어 영역 - 하단 고정 */}
+      <div className="fixed bottom-0 left-0 w-full flex justify-center z-50">
+        <div className="w-full max-w-md bg-gray-800 rounded-t-xl p-4 shadow-2xl">
+          <h2 className="text-lg font-semibold mb-2">{selected?.name} 재생</h2>
+          <p className="text-xs mb-2">스트림 타입: {selected?.type}</p>
+          {loading && <p className="text-yellow-400">스트림 정보를 불러오는 중...</p>}
+          {error && <p className="text-red-400">{error}</p>}
+          {streamUrl && <AudioPlayer src={streamUrl} nowPlaying={nowPlaying} onPlaybackStateChange={handlePlaybackStateChange} />}
 
-          {/* 10초 이동 버튼 (스트림 있을 때만 표시) */}
-          {streamUrl && (
-            <>
-              <button onClick={skipBackward} className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                10초 전
-              </button>
-              <button onClick={skipForward} className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                10초 후
-              </button>
-            </>
-          )}
-
-          <button onClick={nextChannel} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-            다음 채널
-          </button>
+          {/* 채널 이동 버튼 */}
+          <div className="flex justify-between mt-3">
+            <button onClick={prevChannel} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+              이전 채널
+            </button>
+            {streamUrl && (
+              <>
+                <button onClick={skipBackward} className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                  10초 전
+                </button>
+                <button onClick={skipForward} className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                  10초 후
+                </button>
+              </>
+            )}
+            <button onClick={nextChannel} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+              다음 채널
+            </button>
+          </div>
         </div>
       </div>
     </div>

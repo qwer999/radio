@@ -3,6 +3,28 @@
   touch-action: none;
   overflow: hidden;
 }
+
+/* 드래그 가능한 요소들의 기본 스타일 */
+.draggable-item {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 드래그 핸들만 터치 제한 */
+.drag-handle {
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  cursor: grab;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
 #root {
   max-width: 1280px;
   margin: 0 auto;

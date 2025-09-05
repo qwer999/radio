@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/radio/', // GitHub Pages용 base 경로
   plugins: [react()],
   server: {
     host: '0.0.0.0', // 모든 네트워크 인터페이스에서 수신

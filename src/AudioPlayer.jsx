@@ -11,7 +11,11 @@ export default function AudioPlayer({ src, nowPlaying, onPlaybackStateChange }) 
     const audio = audioRef.current;
     if (audio) {
       if (Hls.isSupported()) {
-        hls = new Hls();
+        hls = new Hls({
+          startPosition: -1,
+          liveSyncDurationCount: 1,
+          maxBufferLength: 100,
+        });
         hls.loadSource(src);
         hls.attachMedia(audio);
         hls.on(Hls.Events.MANIFEST_PARSED, function () {

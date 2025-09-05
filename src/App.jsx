@@ -69,7 +69,7 @@ function App() {
 
   const [stations, setStations] = useState(getSavedStations);
   const [excludedStations, setExcludedStations] = useState(getSavedExcludedStations);
-  const [selected, setSelected] = useState(stations[0]);
+  const [selected, setSelected] = useState(null);
   const [streamUrl, setStreamUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -163,7 +163,7 @@ function App() {
       const stationToMove = stations.find((s) => s.id === activeId);
 
       // If the currently selected station is moved to exclusion list, select another station
-      if (selected.id === stationToMove.id && stations.length > 1) {
+      if (selected?.id === stationToMove.id && stations.length > 1) {
         const nextStation = stations.find((s) => s.id !== stationToMove.id);
         setSelected(nextStation);
         fetchStream(nextStation);
@@ -215,7 +215,7 @@ function App() {
       const stationToMove = stations.find((s) => s.id === activeId);
 
       // If the currently selected station is moved to exclusion list, select another station
-      if (selected.id === stationToMove.id && stations.length > 1) {
+      if (selected?.id === stationToMove.id && stations.length > 1) {
         const nextStation = stations.find((s) => s.id !== stationToMove.id);
         setSelected(nextStation);
         fetchStream(nextStation);
@@ -324,6 +324,7 @@ function App() {
 
   // Previous channel (useCallback)
   const prevChannel = useCallback(() => {
+    if (!selected) return;
     const idx = stations.findIndex((s) => s.id === selected.id);
     if (idx === -1) {
       setSelected(stations[0]);
@@ -335,6 +336,7 @@ function App() {
 
   // Next channel (useCallback)
   const nextChannel = useCallback(() => {
+    if (!selected) return;
     const idx = stations.findIndex((s) => s.id === selected.id);
     if (idx === -1) {
       setSelected(stations[0]);
@@ -362,17 +364,19 @@ function App() {
     };
 
     // Media session setup
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: selected.name,
-      artist: '대한민국 인터넷 라디오',
-      album: nowPlaying?.title || '라이브 방송',
-      artwork: [
-        { src: 'https://placehold.co/96x96/333/fff?text=RADIO', sizes: '96x96', type: 'image/png' },
-        { src: 'https://placehold.co/128x128/333/fff?text=RADIO', sizes: '128x128', type: 'image/png' },
-        { src: 'https://placehold.co/192x192/333/fff?text=RADIO', sizes: '192x192', type: 'image/png' },
-        { src: 'https://placehold.co/256x256/333/fff?text=RADIO', sizes: '256x256', type: 'image/png' },
-      ],
-    });
+    if (selected) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: selected.name,
+        artist: '대한민국 인터넷 라디오',
+        album: nowPlaying?.title || '라이브 방송',
+        artwork: [
+          { src: 'https://placehold.co/96x96/333/fff?text=RADIO', sizes: '96x96', type: 'image/png' },
+          { src: 'https://placehold.co/128x128/333/fff?text=RADIO', sizes: '128x128', type: 'image/png' },
+          { src: 'https://placehold.co/192x192/333/fff?text=RADIO', sizes: '192x192', type: 'image/png' },
+          { src: 'https://placehold.co/256x256/333/fff?text=RADIO', sizes: '256x256', type: 'image/png' },
+        ],
+      });
+    }
 
     // Register media button action handlers
     navigator.mediaSession.setActionHandler('play', handlePlay);
@@ -401,7 +405,7 @@ function App() {
   // When selecting a station
   const handleSelect = (station) => {
     // If clicking the same channel
-    if (selected.id === station.id) {
+    if (selected?.id === station.id) {
       // Find audio element
       const audio = document.querySelector('audio');
       if (audio) {
@@ -485,31 +489,42 @@ function App() {
       {/* 플레이어 영역 - 하단 고정 */}
       <div className="fixed bottom-0 left-0 w-full flex justify-center z-50">
         <div className="w-full max-w-md bg-gray-800 rounded-t-xl p-4 shadow-2xl">
-          <h2 className="text-lg font-semibold mb-2">{selected?.name} 재생</h2>
-          <p className="text-xs mb-2">스트림 타입: {selected?.type}</p>
-          {loading && <p className="text-yellow-400">스트림 정보를 불러오는 중...</p>}
-          {error && <p className="text-red-400">{error}</p>}
-          {streamUrl && <AudioPlayer src={streamUrl} nowPlaying={nowPlaying} onPlaybackStateChange={handlePlaybackStateChange} />}
+          {selected ? (
+            <>
+              <h2 className="text-lg font-semibold mb-2">{selected.name} 재생</h2>
+              <p className="text-xs mb-2">스트림 타입: {selected.type}</p>
+              {loading && <p className="text-yellow-400">스트림 정보를 불러오는 중...</p>}
+              {error && <p className="text-red-400">{error}</p>}
+              {streamUrl && <AudioPlayer src={streamUrl} nowPlaying={nowPlaying} onPlaybackStateChange={handlePlaybackStateChange} />}
+            </>
+          ) : (
+            <>
+              <h2 className="text-lg font-semibold mb-2">재생 대기중</h2>
+              <p className="text-gray-400 text-sm">방송국을 선택하면 재생이 시작됩니다</p>
+            </>
+          )}
 
-          {/* 채널 이동 버튼 */}
-          <div className="flex justify-between mt-3">
-            <button onClick={prevChannel} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-              이전 채널
-            </button>
-            {streamUrl && (
-              <>
-                <button onClick={skipBackward} className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                  10초 전
-                </button>
-                <button onClick={skipForward} className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                  10초 후
-                </button>
-              </>
-            )}
-            <button onClick={nextChannel} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-              다음 채널
-            </button>
-          </div>
+          {/* 채널 이동 버튼 - 방송국이 선택되었을 때만 표시 */}
+          {selected && (
+            <div className="flex justify-between mt-3">
+              <button onClick={prevChannel} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                이전 채널
+              </button>
+              {streamUrl && (
+                <>
+                  <button onClick={skipBackward} className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                    10초 전
+                  </button>
+                  <button onClick={skipForward} className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                    10초 후
+                  </button>
+                </>
+              )}
+              <button onClick={nextChannel} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                다음 채널
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

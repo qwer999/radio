@@ -13,8 +13,8 @@ export default function AudioPlayer({ src, nowPlaying, onPlaybackStateChange }) 
       if (Hls.isSupported()) {
         hls = new Hls({
           startPosition: -1,
-          liveSyncDurationCount: 1,
-          maxBufferLength: 100,
+          liveSyncDurationCount: 6,
+          maxBufferLength: 300,
         });
         hls.loadSource(src);
         hls.attachMedia(audio);
@@ -82,6 +82,7 @@ export default function AudioPlayer({ src, nowPlaying, onPlaybackStateChange }) 
           )}
         </div>
       )}
+
       <audio ref={audioRef} controls autoPlay className="w-full mt-2 bg-black rounded">
         지원되지 않는 브라우저입니다.
       </audio>

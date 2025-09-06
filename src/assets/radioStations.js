@@ -87,7 +87,7 @@ export const radioStations = [
   {
     id: 'tbn_gyeongin',
     name: 'TBN 경인교통방송',
-    api: 'http://radio2.tbn.or.kr:1935/gyeongin/myStream/playlist.m3u8',
+    api: 'https://5cc6beb04faf6.streamlock.net/gyeongin/myStream/playlist.m3u8',
     type: 'static',
   },
   {

@@ -626,45 +626,45 @@ function App() {
             </div>
           )}
           <img
-            src="public/icon_prev_10s.png"
+            src="/radio/icon_prev_10s.png"
             alt="10초 전"
-            className="w-[25px] h-[27px] cursor-pointer transition-all duration-200 hover:scale-110 hover:brightness-125 active:scale-95 active:brightness-75"
+            className="w-[25px] h-[27px] cursor-pointer transition-all duration-200 active:scale-95 active:brightness-75"
             onClick={skipBackward}
           />
           <img
-            src="public/icon_next_10s.png"
+            src="/radio/icon_next_10s.png"
             alt="10초 후"
-            className="w-[25px] h-[27px] cursor-pointer transition-all duration-200 hover:scale-110 hover:brightness-125 active:scale-95 active:brightness-75"
+            className="w-[25px] h-[27px] cursor-pointer transition-all duration-200 active:scale-95 active:brightness-75"
             onClick={skipForward}
           />
         </div>
 
-        <div className="flex justify-around p-5 mx-auto border-box px-9 mb-3 gap-4 rounded-full bg-[#2CFFAA] w-[240px] justify transition-all duration-300 hover:bg-gray-100 hover:scale-105 hover:shadow-xl">
+        <div className="flex justify-around p-5 mx-auto border-box px-9 mb-3 gap-4 rounded-full bg-[#2CFFAA] w-[240px] justify transition-all duration-300">
           <img
-            src="public/icon_prev.png"
+            src="/radio/icon_prev.png"
             alt="이전 채널"
-            className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 hover:scale-125 hover:rotate-6 active:scale-90 active:rotate-3 hover:drop-shadow-lg z-10 relative opacity-50"
+            className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 active:scale-90 active:rotate-3 z-10 relative opacity-50"
             onClick={prevChannel}
           />
           {isPlaying ? (
             <img
-              src="public/icon_pause.png"
+              src="/radio/icon_pause.png"
               alt="일시정지"
-              className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 hover:scale-125 hover:brightness-110 active:scale-90 hover:drop-shadow-xl z-10 relative"
+              className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 active:scale-90 z-10 relative"
               onClick={togglePlayPause}
             />
           ) : (
             <img
-              src="public/icon_play.png"
+              src="/radio/icon_play.png"
               alt="재생"
-              className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 hover:scale-125 hover:brightness-110 active:scale-90 hover:drop-shadow-xl hover:animate-bounce z-10 relative"
+              className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 active:scale-90 z-10 relative"
               onClick={togglePlayPause}
             />
           )}
           <img
-            src="public/icon_next.png"
+            src="/radio/icon_next.png"
             alt="다음 채널"
-            className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 hover:scale-125 hover:-rotate-6 active:scale-90 active:-rotate-3 hover:drop-shadow-lg z-10 relative opacity-50"
+            className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 active:scale-90 active:-rotate-3 z-10 relative opacity-50"
             onClick={nextChannel}
           />
         </div>

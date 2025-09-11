@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import StationList from './components/StationList';
 import ExcludedList from './components/ExcludedList';
 import StationCard from './components/StationCard';
+import PerformanceMonitor from './components/PerformanceMonitor';
 import { radioStations as defaultStations } from './assets/radioStations';
 import AudioPlayer from './AudioPlayer';
 import './App.css';
@@ -76,6 +77,7 @@ function App() {
   const [nowPlaying, setNowPlaying] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [timeInfo, setTimeInfo] = useState({ currentTime: '--:--', bufferedTime: '--:--' });
   const [activeId, setActiveId] = useState(null); // ID of item being dragged
   const [activeStation, setActiveStation] = useState(null); // Station being dragged
   const audioRef = useRef(null);
@@ -431,6 +433,11 @@ function App() {
     setIsPaused(!playing && streamUrl); // If there's a stream URL and not playing, then it's paused
   };
 
+  // 시간 정보 업데이트 핸들러
+  const handleTimeUpdate = (timeData) => {
+    setTimeInfo(timeData);
+  };
+
   // Skip backward 10 seconds
   const skipBackward = () => {
     const audio = document.querySelector('audio');
@@ -441,6 +448,18 @@ function App() {
   const skipForward = () => {
     const audio = document.querySelector('audio');
     if (audio) audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
+  };
+
+  // Toggle play/pause
+  const togglePlayPause = () => {
+    const audio = document.querySelector('audio');
+    if (audio) {
+      if (audio.paused) {
+        audio.play().catch((e) => console.log('재생 실패:', e));
+      } else {
+        audio.pause();
+      }
+    }
   };
 
   // Restore station from exclusion list
@@ -486,57 +505,34 @@ function App() {
 
       <div className="fixed left-0 bottom-0 w-full px-7 pb-5  bg-[#000] flex flex-col justify-center z-[9999]">
         <div className="flex flex-row items-center text-[14px] gap-2 p-2">
-          <strong className="mr-auto">라디오 제목</strong>
-          <div className="mr-2">
-            <span>20:10</span> / <span>20:20</span>
-          </div>
-          <img src="public/icon_prev_10s.png" alt="10초 전" className="w-[25px] h-[27px]" />
-          <img src="public/icon_next_10s.png" alt="10초 후" className="w-[25px] h-[27px]" />
+          <strong className="mr-auto text-white">{selected ? selected.name : '방송국을 선택하세요'}</strong>
+          {selected && isPlaying && timeInfo.currentTime !== '--:--' && (
+            <div className="mr-2 text-white">
+              <span>{timeInfo.currentTime}</span> / <span>{timeInfo.bufferedTime}</span>
+            </div>
+          )}
+          <img src="public/icon_prev_10s.png" alt="10초 전" className="w-[25px] h-[27px] cursor-pointer" onClick={skipBackward} />
+          <img src="public/icon_next_10s.png" alt="10초 후" className="w-[25px] h-[27px] cursor-pointer" onClick={skipForward} />
         </div>
 
         <div className="flex justify-around p-3 mx-auto  px-6 mb-3 gap-4 rounded-full bg-[#ffffff] w-[180px] justify">
-          <img src="public/icon_prev.png" alt="재생" className="w-[30px] h-[30px]" />
-          <img src="public/icon_play.png" alt="재생" className="w-[30px] h-[30px]" />
-          {/* <img src="public/icon_pause.png" alt="정지" className="w-[30px] h-[30px]" /> */}
-          <img src="public/icon_next.png" alt="재생" className="w-[30px] h-[30px]" />
-        </div>
-      </div>
-
-      {/* 플레이어 영역 - 하단 고정 */}
-      <div className="fixed left-0 w-full flex bg-[#000000] justify-center z-[9999]">
-        <div className="w-full max-w-md bg-gray-800 rounded-t-xl p-4 shadow-2xl">
-          {/* 플레이어는 항상 표시 */}
-          <div>
-            <h2 className="text-lg font-semibold mb-2">{selected ? `${selected.name} 재생` : '재생 대기중'}</h2>
-            <p className="text-xs mb-2 text-gray-300">{selected ? `스트림 타입: ${selected.type}` : '방송국을 선택하면 재생이 시작됩니다'}</p>
-            {loading && <p className="text-yellow-400">스트림 정보를 불러오는 중...</p>}
-            {error && <p className="text-red-400">{error}</p>}
-            <AudioPlayer src={streamUrl} nowPlaying={nowPlaying} onPlaybackStateChange={handlePlaybackStateChange} />
-          </div>
-
-          {/* 채널 이동 버튼 - 방송국이 선택되었을 때만 표시 */}
-          {selected && (
-            <div className="flex justify-between mt-3">
-              <button onClick={prevChannel} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                이전 채널
-              </button>
-              {streamUrl && (
-                <>
-                  <button onClick={skipBackward} className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                    10초 전
-                  </button>
-                  <button onClick={skipForward} className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                    10초 후
-                  </button>
-                </>
-              )}
-              <button onClick={nextChannel} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                다음 채널
-              </button>
-            </div>
+          <img src="public/icon_prev.png" alt="이전 채널" className="w-[30px] h-[30px] cursor-pointer" onClick={prevChannel} />
+          {isPlaying ? (
+            <img src="public/icon_pause.png" alt="일시정지" className="w-[30px] h-[30px] cursor-pointer" onClick={togglePlayPause} />
+          ) : (
+            <img src="public/icon_play.png" alt="재생" className="w-[30px] h-[30px] cursor-pointer" onClick={togglePlayPause} />
           )}
+          <img src="public/icon_next.png" alt="다음 채널" className="w-[30px] h-[30px] cursor-pointer" onClick={nextChannel} />
         </div>
       </div>
+
+      {/* 숨겨진 오디오 플레이어 - 실제 오디오 재생만 담당 */}
+      <div style={{ display: 'none' }}>
+        <AudioPlayer src={streamUrl} nowPlaying={nowPlaying} onPlaybackStateChange={handlePlaybackStateChange} onTimeUpdate={handleTimeUpdate} />
+      </div>
+
+      {/* 성능 모니터링 컴포넌트 */}
+      <PerformanceMonitor />
     </div>
   );
 }

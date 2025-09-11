@@ -1,7 +1,7 @@
 // 방송국 카드 컴포넌트
 import React from 'react';
 
-function StationCard({ station, selected, excluded, onClick, isDragOverlay = false, dragHandleProps = {} }) {
+const StationCard = React.memo(function StationCard({ station, selected, excluded, onClick, isDragOverlay = false, dragHandleProps = {} }) {
   return (
     <div
       className={`flex flex-row w-full text-left py-[4px] cursor-pointer transition-all duration-150
@@ -22,6 +22,6 @@ function StationCard({ station, selected, excluded, onClick, isDragOverlay = fal
       <span className="font-medium select-none">{station.name}</span>
     </div>
   );
-}
+});
 
 export default StationCard;

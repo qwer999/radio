@@ -80,8 +80,18 @@ function App() {
   const [timeInfo, setTimeInfo] = useState({ currentTime: '--:--', bufferedTime: '--:--' });
   const [activeId, setActiveId] = useState(null); // ID of item being dragged
   const [activeStation, setActiveStation] = useState(null); // Station being dragged
-  const audioRef = useRef(null);
 
+  // 방송국 애니메이션 상태
+  const [stationAnimationState, setStationAnimationState] = useState('idle'); // 'idle', 'slide-out', 'slide-in'
+  const [displayStation, setDisplayStation] = useState(null);
+  const previousStationRef = useRef(null);
+  const animationTimeoutRef = useRef(null);
+
+  // 시간 정보 애니메이션 상태 (방송국과 함께 애니메이션)
+  const [timeAnimationState, setTimeAnimationState] = useState('idle');
+  const [displayTimeInfo, setDisplayTimeInfo] = useState({ currentTime: '--:--', bufferedTime: '--:--' });
+
+  const audioRef = useRef(null);
   const MBC_PROXY = 'https://broken-field-5aad.qwer999.workers.dev/?url=';
 
   // Drag and drop sensor configuration
@@ -404,6 +414,75 @@ function App() {
     }
   }, [streamUrl]);
 
+  // 방송국 변경 애니메이션 처리
+  useEffect(() => {
+    // 이전 타이머가 있다면 정리
+    if (animationTimeoutRef.current) {
+      clearTimeout(animationTimeoutRef.current);
+    }
+
+    if (selected !== previousStationRef.current) {
+      if (previousStationRef.current !== null || displayStation !== null) {
+        // 기존 방송국이 있으면 슬라이드 아웃
+        setStationAnimationState('slide-out');
+        setTimeAnimationState('slide-out'); // 시간도 함께 슬라이드 아웃
+
+        animationTimeoutRef.current = setTimeout(() => {
+          // 300ms 후 기존 방송국 제거하고 새 방송국 설정
+          setDisplayStation(selected);
+          setDisplayTimeInfo({ currentTime: '--:--', bufferedTime: '--:--' }); // 시간 초기화
+          setStationAnimationState('slide-in');
+          setTimeAnimationState('slide-in'); // 시간도 함께 슬라이드 인
+
+          animationTimeoutRef.current = setTimeout(() => {
+            // 추가 300ms 후 애니메이션 완료
+            setStationAnimationState('idle');
+            setTimeAnimationState('idle');
+            previousStationRef.current = selected;
+          }, 300);
+        }, 300);
+      } else {
+        // 처음 방송국 선택 시
+        setDisplayStation(selected);
+        setDisplayTimeInfo({ currentTime: '--:--', bufferedTime: '--:--' });
+        setStationAnimationState('slide-in');
+        setTimeAnimationState('slide-in');
+        previousStationRef.current = selected;
+
+        animationTimeoutRef.current = setTimeout(() => {
+          setStationAnimationState('idle');
+          setTimeAnimationState('idle');
+        }, 300);
+      }
+    }
+
+    // 컴포넌트 언마운트 시 타이머 정리
+    return () => {
+      if (animationTimeoutRef.current) {
+        clearTimeout(animationTimeoutRef.current);
+      }
+    };
+  }, [selected]); // 오직 selected만 의존성으로 설정
+
+  // 시간 정보 업데이트 (페이드인 효과 포함)
+  useEffect(() => {
+    if (timeInfo.currentTime !== '--:--') {
+      // 시간이 처음 나타나는 경우 (--:--에서 실제 시간으로 변경)
+      if (displayTimeInfo.currentTime === '--:--') {
+        // 페이드인 애니메이션으로 시간 표시
+        setTimeAnimationState('slide-in');
+        setDisplayTimeInfo(timeInfo);
+
+        setTimeout(() => {
+          setTimeAnimationState('idle');
+        }, 500); // CSS 애니메이션과 맞춤
+      } else {
+        // 이미 시간이 표시되어 있으면 애니메이션 없이 업데이트
+        setDisplayTimeInfo(timeInfo);
+      }
+    }
+  }, [timeInfo]);
+
   // When selecting a station
   const handleSelect = (station) => {
     // If clicking the same channel
@@ -452,6 +531,13 @@ function App() {
 
   // Toggle play/pause
   const togglePlayPause = () => {
+    // 방송국이 선택되지 않았을 때 첫 번째 방송국 자동 선택
+    if (!selected && stations.length > 0) {
+      const firstStation = stations[0];
+      handleSelect(firstStation);
+      return;
+    }
+
     const audio = document.querySelector('audio');
     if (audio) {
       if (audio.paused) {
@@ -479,7 +565,7 @@ function App() {
 
   // ...existing code...
   return (
-    <div className="min-h-screen bg-gray-100 text-white flex flex-col items-center p-4 select-none relative">
+    <div className="min-h-screen text-white flex flex-col items-center p-4 select-none relative">
       <DndContext
         sensors={sensors}
         collisionDetection={pointerWithin}
@@ -503,26 +589,84 @@ function App() {
         </DragOverlay>
       </DndContext>
 
-      <div className="fixed left-0 bottom-0 w-full px-7 pb-5  bg-[#000] flex flex-col justify-center z-[9999]">
-        <div className="flex flex-row items-center text-[14px] gap-2 p-2">
-          <strong className="mr-auto text-white">{selected ? selected.name : '방송국을 선택하세요'}</strong>
-          {selected && isPlaying && timeInfo.currentTime !== '--:--' && (
-            <div className="mr-2 text-white">
-              <span>{timeInfo.currentTime}</span> / <span>{timeInfo.bufferedTime}</span>
+      <div
+        className="fixed left-0 bottom-0 w-full px-7 pt-4 pb-5 bg-[#000] flex flex-col justify-center z-[9999] transform transition-transform duration-500 ease-out"
+        style={{ background: 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, #000000 30px)' }}
+      >
+        <div className="flex flex-row items-center text-[14px] gap-2 p-2 transition-opacity duration-300 ">
+          <div className="mr-auto overflow-hidden">
+            <strong
+              className={`text-gray-400 font-bold transition-colors duration-300 block whitespace-nowrap
+                ${
+                  stationAnimationState === 'slide-out'
+                    ? 'station-slide-out'
+                    : stationAnimationState === 'slide-in'
+                    ? 'station-slide-in'
+                    : 'station-idle'
+                }`}
+            >
+              {displayStation ? displayStation.name : '방송국을 선택하세요'}
+            </strong>
+          </div>
+          {selected && displayTimeInfo.currentTime !== '--:--' && (
+            <div className="mr-2 overflow-hidden">
+              <div
+                className={`text-gray-500 block whitespace-nowrap
+                  ${
+                    timeAnimationState === 'slide-out'
+                      ? 'station-slide-out'
+                      : timeAnimationState === 'slide-in'
+                      ? 'time-fade-in' // 시간 전용 페이드인 애니메이션 사용
+                      : 'station-idle'
+                  }`}
+              >
+                <span className="transition-colors duration-300">{displayTimeInfo.currentTime}</span> /{' '}
+                <span className="transition-colors duration-300">{displayTimeInfo.bufferedTime}</span>
+              </div>
             </div>
           )}
-          <img src="public/icon_prev_10s.png" alt="10초 전" className="w-[25px] h-[27px] cursor-pointer" onClick={skipBackward} />
-          <img src="public/icon_next_10s.png" alt="10초 후" className="w-[25px] h-[27px] cursor-pointer" onClick={skipForward} />
+          <img
+            src="public/icon_prev_10s.png"
+            alt="10초 전"
+            className="w-[25px] h-[27px] cursor-pointer transition-all duration-200 hover:scale-110 hover:brightness-125 active:scale-95 active:brightness-75"
+            onClick={skipBackward}
+          />
+          <img
+            src="public/icon_next_10s.png"
+            alt="10초 후"
+            className="w-[25px] h-[27px] cursor-pointer transition-all duration-200 hover:scale-110 hover:brightness-125 active:scale-95 active:brightness-75"
+            onClick={skipForward}
+          />
         </div>
 
-        <div className="flex justify-around p-3 mx-auto  px-6 mb-3 gap-4 rounded-full bg-[#ffffff] w-[180px] justify">
-          <img src="public/icon_prev.png" alt="이전 채널" className="w-[30px] h-[30px] cursor-pointer" onClick={prevChannel} />
+        <div className="flex justify-around p-5 mx-auto border-box px-9 mb-3 gap-4 rounded-full bg-[#2CFFAA] w-[240px] justify transition-all duration-300 hover:bg-gray-100 hover:scale-105 hover:shadow-xl">
+          <img
+            src="public/icon_prev.png"
+            alt="이전 채널"
+            className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 hover:scale-125 hover:rotate-6 active:scale-90 active:rotate-3 hover:drop-shadow-lg z-10 relative opacity-50"
+            onClick={prevChannel}
+          />
           {isPlaying ? (
-            <img src="public/icon_pause.png" alt="일시정지" className="w-[30px] h-[30px] cursor-pointer" onClick={togglePlayPause} />
+            <img
+              src="public/icon_pause.png"
+              alt="일시정지"
+              className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 hover:scale-125 hover:brightness-110 active:scale-90 hover:drop-shadow-xl z-10 relative"
+              onClick={togglePlayPause}
+            />
           ) : (
-            <img src="public/icon_play.png" alt="재생" className="w-[30px] h-[30px] cursor-pointer" onClick={togglePlayPause} />
+            <img
+              src="public/icon_play.png"
+              alt="재생"
+              className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 hover:scale-125 hover:brightness-110 active:scale-90 hover:drop-shadow-xl hover:animate-bounce z-10 relative"
+              onClick={togglePlayPause}
+            />
           )}
-          <img src="public/icon_next.png" alt="다음 채널" className="w-[30px] h-[30px] cursor-pointer" onClick={nextChannel} />
+          <img
+            src="public/icon_next.png"
+            alt="다음 채널"
+            className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 hover:scale-125 hover:-rotate-6 active:scale-90 active:-rotate-3 hover:drop-shadow-lg z-10 relative opacity-50"
+            onClick={nextChannel}
+          />
         </div>
       </div>
 

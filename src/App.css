@@ -25,6 +25,138 @@
 .drag-handle:active {
   cursor: grabbing;
 }
+
+/* 마이크로 인터렉션 애니메이션 */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+@keyframes heartbeat {
+  0% {
+    transform: scale(1);
+  }
+  14% {
+    transform: scale(1.1);
+  }
+  28% {
+    transform: scale(1);
+  }
+  42% {
+    transform: scale(1.1);
+  }
+  70% {
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out;
+}
+
+.animate-ripple {
+  animation: ripple 0.6s ease-out;
+}
+
+.animate-heartbeat {
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+/* 버튼 hover 효과 강화 */
+.btn-micro-interaction {
+  position: relative;
+  overflow: hidden;
+}
+
+/* 방송국 변경 슬라이드 애니메이션 */
+@keyframes slide-out {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+}
+
+@keyframes slide-in {
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes time-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(1);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.station-slide-out {
+  animation: slide-out 0.3s ease-out forwards;
+}
+
+.station-slide-in {
+  animation: slide-in 0.3s ease-out forwards;
+}
+
+.station-idle {
+  transform: translateY(0);
+  opacity: 1;
+  transition: all 0.3s ease-out;
+}
+
+/* 시간 정보 전용 애니메이션 */
+.time-fade-in {
+  animation: time-fade-in 0.5s ease-out forwards;
+}
+
+.btn-micro-interaction::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transition: width 0.6s, height 0.6s;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+}
+
+.btn-micro-interaction:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -66,4 +198,8 @@
 
 .read-the-docs {
   color: #888;
+}
+
+body {
+  background: #000;
 }

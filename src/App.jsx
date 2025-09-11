@@ -460,9 +460,7 @@ function App() {
 
   // ...existing code...
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center p-4 select-none pb-40">
-      <h1 className="text-2xl font-bold mb-4">대한민국 인터넷 라디오</h1>
-
+    <div className="min-h-screen bg-gray-100 text-white flex flex-col items-center p-4 select-none relative">
       <DndContext
         sensors={sensors}
         collisionDetection={pointerWithin}
@@ -486,23 +484,35 @@ function App() {
         </DragOverlay>
       </DndContext>
 
+      <div className="fixed left-0 bottom-0 w-full px-7 pb-5  bg-[#000] flex flex-col justify-center z-[9999]">
+        <div className="flex flex-row items-center text-[14px] gap-2 p-2">
+          <strong className="mr-auto">라디오 제목</strong>
+          <div className="mr-2">
+            <span>20:10</span> / <span>20:20</span>
+          </div>
+          <img src="public/icon_prev_10s.png" alt="10초 전" className="w-[25px] h-[27px]" />
+          <img src="public/icon_next_10s.png" alt="10초 후" className="w-[25px] h-[27px]" />
+        </div>
+
+        <div className="flex justify-around p-3 mx-auto  px-6 mb-3 gap-4 rounded-full bg-[#ffffff] w-[180px] justify">
+          <img src="public/icon_prev.png" alt="재생" className="w-[30px] h-[30px]" />
+          <img src="public/icon_play.png" alt="재생" className="w-[30px] h-[30px]" />
+          {/* <img src="public/icon_pause.png" alt="정지" className="w-[30px] h-[30px]" /> */}
+          <img src="public/icon_next.png" alt="재생" className="w-[30px] h-[30px]" />
+        </div>
+      </div>
+
       {/* 플레이어 영역 - 하단 고정 */}
-      <div className="fixed bottom-0 left-0 w-full flex justify-center z-50">
+      <div className="fixed left-0 w-full flex bg-[#000000] justify-center z-[9999]">
         <div className="w-full max-w-md bg-gray-800 rounded-t-xl p-4 shadow-2xl">
-          {selected ? (
-            <>
-              <h2 className="text-lg font-semibold mb-2">{selected.name} 재생</h2>
-              <p className="text-xs mb-2">스트림 타입: {selected.type}</p>
-              {loading && <p className="text-yellow-400">스트림 정보를 불러오는 중...</p>}
-              {error && <p className="text-red-400">{error}</p>}
-              {streamUrl && <AudioPlayer src={streamUrl} nowPlaying={nowPlaying} onPlaybackStateChange={handlePlaybackStateChange} />}
-            </>
-          ) : (
-            <>
-              <h2 className="text-lg font-semibold mb-2">재생 대기중</h2>
-              <p className="text-gray-400 text-sm">방송국을 선택하면 재생이 시작됩니다</p>
-            </>
-          )}
+          {/* 플레이어는 항상 표시 */}
+          <div>
+            <h2 className="text-lg font-semibold mb-2">{selected ? `${selected.name} 재생` : '재생 대기중'}</h2>
+            <p className="text-xs mb-2 text-gray-300">{selected ? `스트림 타입: ${selected.type}` : '방송국을 선택하면 재생이 시작됩니다'}</p>
+            {loading && <p className="text-yellow-400">스트림 정보를 불러오는 중...</p>}
+            {error && <p className="text-red-400">{error}</p>}
+            <AudioPlayer src={streamUrl} nowPlaying={nowPlaying} onPlaybackStateChange={handlePlaybackStateChange} />
+          </div>
 
           {/* 채널 이동 버튼 - 방송국이 선택되었을 때만 표시 */}
           {selected && (

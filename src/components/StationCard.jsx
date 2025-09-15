@@ -4,8 +4,8 @@ import React from 'react';
 const StationCard = React.memo(function StationCard({ station, selected, excluded, onClick, isDragOverlay = false, dragHandleProps = {} }) {
   return (
     <div
-      className={`flex flex-row w-full text-left py-[4px] cursor-pointer transition-all duration-150
-        ${excluded ? 'bg-gray-700 text-gray-400' : selected ? 'bg-blue-900 border-blue-500' : 'bg-gray-800 border-gray-700'}
+      className={`flex flex-row w-full text-left py-[4px] cursor-pointer transition-all duration-150 items-center text-[24px]
+        ${excluded ? ' text-gray-400 ' : selected ? ' border-blue-500' : 'opacity-45 !text-[20px] border-gray-700'}
         ${isDragOverlay ? 'bg-white text-black border-blue-500' : ''}`}
       onClick={onClick}
       style={{ touchAction: 'auto' }} // 일반 영역은 스크롤 허용
@@ -20,6 +20,13 @@ const StationCard = React.memo(function StationCard({ station, selected, exclude
         ≡
       </span>
       <span className="font-medium select-none">{station.name}</span>
+      {selected && (
+        <div className="ml-2 flex items-center">
+          <div className="w-5 h-5 rounded-full overflow-hidden flex items-center justify-center bg-gray-900">
+            <img src="/radio/catjam.gif" alt="Now Playing" className="w-7 h-7 object-cover" />
+          </div>
+        </div>
+      )}
     </div>
   );
 });

@@ -80,7 +80,7 @@ export default function AudioPlayer({ src, nowPlaying, onPlaybackStateChange, on
         hls = new Hls({
           startPosition: -1,
           liveSyncDurationCount: 12,
-          maxBufferLength: 600,
+          maxBufferLength: 200,
         });
         hls.loadSource(src);
         hls.attachMedia(audio);

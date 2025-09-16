@@ -4,9 +4,9 @@ import React from 'react';
 const StationCard = React.memo(function StationCard({ station, selected, excluded, onClick, isDragOverlay = false, dragHandleProps = {} }) {
   return (
     <div
-      className={`flex flex-row w-full text-left py-[4px] cursor-pointer transition-all duration-150 items-center text-[24px]
+      className={`flex flex-row w-full text-left py-[4px] px-[30px] cursor-pointer transition-all duration-150 items-center text-[24px]
         ${excluded ? ' text-gray-400 ' : selected ? ' border-blue-500' : 'opacity-45 !text-[20px] border-gray-700'}
-        ${isDragOverlay ? 'bg-white text-black border-blue-500' : ''}`}
+        ${isDragOverlay ? 'bg-black text-white opacity-100 border-blue-500' : ''}`}
       onClick={onClick}
       style={{ touchAction: 'auto' }} // 일반 영역은 스크롤 허용
     >

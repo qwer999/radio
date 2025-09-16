@@ -565,7 +565,7 @@ function App() {
 
   // ...existing code...
   return (
-    <div className="min-h-screen text-white flex flex-col items-center p-4 select-none relative">
+    <div className="min-h-screen text-white flex flex-col items-center  select-none relative">
       <DndContext
         sensors={sensors}
         collisionDetection={pointerWithin}

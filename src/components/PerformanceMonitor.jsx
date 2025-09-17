@@ -105,8 +105,8 @@ export default function PerformanceMonitor() {
 
   if (!isVisible) {
     return (
-      <div className="fixed top-4 right-4 bg-gray-800 text-white p-2 rounded cursor-pointer text-xs" onClick={() => setIsVisible(true)}>
-        📊 Performance
+      <div className="fixed top-4 right-4 bg-gray-800 text-white opacity-60 p-2 rounded cursor-pointer text-xs" onClick={() => setIsVisible(true)}>
+        Performance
       </div>
     );
   }
@@ -164,6 +164,15 @@ export default function PerformanceMonitor() {
         )}
 
         <div className="mt-3 text-gray-400">Press Ctrl+Shift+P to toggle</div>
+
+        <div className="mt-4 pt-3 border-t border-gray-700">
+          <button
+            onClick={() => window.resetPlaylist && window.resetPlaylist()}
+            className="w-full py-2 bg-red-700 hover:bg-red-600 rounded text-white font-medium transition-colors"
+          >
+            재생목록 리셋
+          </button>
+        </div>
       </div>
     </div>
   );

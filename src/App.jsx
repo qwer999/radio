@@ -8,6 +8,7 @@ import AudioPlayer from './AudioPlayer';
 import './App.css';
 import {
   DndContext,
+  rectIntersection,
   pointerWithin,
   KeyboardSensor,
   PointerSensor,
@@ -563,12 +564,31 @@ function App() {
     });
   };
 
+  // 재생목록 리셋 함수
+  const handleResetPlaylist = () => {
+    setStations(defaultStations);
+    setExcludedStations([]);
+    localStorage.setItem('radioStations', JSON.stringify(defaultStations));
+    localStorage.setItem('excludedStations', JSON.stringify([]));
+    setSelected(defaultStations[0]);
+    fetchStream(defaultStations[0]);
+  };
+
+  // Global access for PerformanceMonitor
+  useEffect(() => {
+    window.resetPlaylist = handleResetPlaylist;
+
+    return () => {
+      window.resetPlaylist = undefined;
+    };
+  }, []);
+
   // ...existing code...
   return (
     <div className="min-h-screen text-white flex flex-col items-center  select-none relative">
       <DndContext
         sensors={sensors}
-        collisionDetection={pointerWithin}
+        collisionDetection={rectIntersection}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}

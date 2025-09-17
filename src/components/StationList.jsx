@@ -34,20 +34,6 @@ function SortableItem({ station, selected, onSelect, isPlaying }) {
   );
 }
 
-function StationDropArea() {
-  const { setNodeRef, isOver } = useDroppable({ id: 'station-list-drop-area' });
-  return (
-    <div
-      ref={setNodeRef}
-      className={`text-center text-gray-500 py-4 bg-gray-800 rounded-lg border-2 border-dashed border-gray-700 transition-colors duration-200 ${
-        isOver ? 'bg-gray-600' : ''
-      }`}
-    >
-      제외된 방송국을 여기로 드래그하여 재생 목록에 추가하세요
-    </div>
-  );
-}
-
 function ExcludeDropArea() {
   const { setNodeRef, isOver } = useDroppable({ id: 'station-exclude-drop-area' });
   return (
@@ -78,7 +64,6 @@ function StationList({ stations, selectedId, onSelect, isPlaying }) {
             />
           ))}
           <ExcludeDropArea />
-          <StationDropArea />
         </div>
       </SortableContext>
     </div>

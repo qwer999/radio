@@ -48,7 +48,7 @@ const StationCard = React.memo(function StationCard({
       <span className="font-medium select-none">{station.name}</span>
       {selected && (
         <div className="ml-2 flex items-center">
-          <div className="w-5 h-5 rounded-full overflow-hidden flex items-center justify-center bg-gray-900 relative">
+          <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-gray-900 relative">
             {/* 항상 표시되는 선택 표시 (원형) */}
             <div className="absolute inset-0 rounded-full bg-gray-500 opacity-0" style={{ transform: 'scale(0.8)' }} />
 
@@ -56,7 +56,7 @@ const StationCard = React.memo(function StationCard({
             <img
               src="/radio/catjam.gif"
               alt="Now Playing"
-              className="w-7 h-7 object-cover transition-opacity duration-500"
+              className="w-full h-full object-cover transition-opacity duration-500"
               style={{ opacity: opacity }}
             />
           </div>

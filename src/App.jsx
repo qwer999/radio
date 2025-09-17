@@ -652,9 +652,9 @@ function App() {
                 {displayStation ? displayStation.name : '방송국을 선택하세요'}
               </strong>
             </div>
-            <div className="mr-2 overflow-hidden">
+            <div className="mr-2 overflow-hidden text-[12px]">
               <div
-                className={`text-gray-500 block whitespace-nowrap
+                className={`text-gray-500 block whitespace-nowrap 
                 ${
                   timeAnimationState === 'slide-out'
                     ? 'station-slide-out'
@@ -662,9 +662,15 @@ function App() {
                     ? 'time-fade-in' // 시간 전용 페이드인 애니메이션 사용
                     : 'station-idle'
                 }`}
+                style={{ fontFamily: 'Lato, sans-serif' }}
               >
-                <span className="transition-colors duration-300 font-lato leading-tight tabular-nums">{displayTimeInfo.currentTime}</span> /{' '}
-                <span className="transition-colors duration-300 font-lato leading-tight tabular-nums">{displayTimeInfo.bufferedTime}</span>
+                <span style={{ fontFamily: 'Lato, sans-serif' }} className="transition-colors duration-300 leading-tight tabular-nums">
+                  {displayTimeInfo.currentTime}
+                </span>{' '}
+                /{' '}
+                <span style={{ fontFamily: 'Lato, sans-serif' }} className="transition-colors duration-300 leading-tight tabular-nums">
+                  {displayTimeInfo.bufferedTime}
+                </span>
               </div>
             </div>
           </div>

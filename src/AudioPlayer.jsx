@@ -9,7 +9,7 @@ export default function AudioPlayer({ src, nowPlaying, onPlaybackStateChange, on
 
   // 시간을 MM:SS 형식으로 포맷팅
   const formatTime = (seconds) => {
-    if (!seconds || isNaN(seconds)) return '--:--';
+    if (!seconds || isNaN(seconds)) return '00:00';
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;

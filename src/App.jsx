@@ -291,6 +291,8 @@ function App() {
     setLoading(true);
     setError('');
     setNowPlaying(null);
+    // 방송국 변경 시 시간 표시가 계속 유지되도록 기존 시간 정보 유지
+    // 아래 코드는 제거하여 기존 시간 정보를 계속 표시
     try {
       let url = '';
       let np = null;
@@ -431,7 +433,7 @@ function App() {
         animationTimeoutRef.current = setTimeout(() => {
           // 300ms 후 기존 방송국 제거하고 새 방송국 설정
           setDisplayStation(selected);
-          setDisplayTimeInfo({ currentTime: '--:--', bufferedTime: '--:--' }); // 시간 초기화
+          // 시간 초기화 대신 기존 시간 유지 (방송국 변경 시 중간 단계 '--:--' 표시 제거)
           setStationAnimationState('slide-in');
           setTimeAnimationState('slide-in'); // 시간도 함께 슬라이드 인
 
@@ -445,6 +447,7 @@ function App() {
       } else {
         // 처음 방송국 선택 시
         setDisplayStation(selected);
+        // 초기 시간은 --:--로 설정 (기본 값)
         setDisplayTimeInfo({ currentTime: '--:--', bufferedTime: '--:--' });
         setStationAnimationState('slide-in');
         setTimeAnimationState('slide-in');
@@ -465,23 +468,10 @@ function App() {
     };
   }, [selected]); // 오직 selected만 의존성으로 설정
 
-  // 시간 정보 업데이트 (페이드인 효과 포함)
+  // 시간 정보 업데이트 (애니메이션 없이 즉시 업데이트)
   useEffect(() => {
-    if (timeInfo.currentTime !== '--:--') {
-      // 시간이 처음 나타나는 경우 (--:--에서 실제 시간으로 변경)
-      if (displayTimeInfo.currentTime === '--:--') {
-        // 페이드인 애니메이션으로 시간 표시
-        setTimeAnimationState('slide-in');
-        setDisplayTimeInfo(timeInfo);
-
-        setTimeout(() => {
-          setTimeAnimationState('idle');
-        }, 500); // CSS 애니메이션과 맞춤
-      } else {
-        // 이미 시간이 표시되어 있으면 애니메이션 없이 업데이트
-        setDisplayTimeInfo(timeInfo);
-      }
-    }
+    // 방송국 이동 시 시간 정보 즉시 업데이트 (애니메이션 없이)
+    setDisplayTimeInfo(timeInfo);
   }, [timeInfo]);
 
   // When selecting a station
@@ -570,8 +560,12 @@ function App() {
     setExcludedStations([]);
     localStorage.setItem('radioStations', JSON.stringify(defaultStations));
     localStorage.setItem('excludedStations', JSON.stringify([]));
+    // 첫번째 방송국 선택하여 설정
     setSelected(defaultStations[0]);
+    // 선택한 방송국으로 스트림 가져오기
     fetchStream(defaultStations[0]);
+    // 시간 정보 초기화 확실하게 설정
+    setDisplayTimeInfo({ currentTime: '--:--', bufferedTime: '--:--' });
   };
 
   // Global access for PerformanceMonitor
@@ -643,9 +637,10 @@ function App() {
           />
         </div>
         <div className="flex flex-row items-center text-[14px] gap-2 pb-5 transition-opacity duration-300 ">
-          <div className="mr-auto overflow-hidden">
-            <strong
-              className={`text-gray-400 font-bold transition-colors duration-300 block whitespace-nowrap
+          <div className="flex flex-col mr-auto justify-start  items-start">
+            <div className="mr-auto overflow-hidden">
+              <strong
+                className={`text-white font-bold transition-colors duration-300 block whitespace-nowrap
                 ${
                   stationAnimationState === 'slide-out'
                     ? 'station-slide-out'
@@ -653,27 +648,26 @@ function App() {
                     ? 'station-slide-in'
                     : 'station-idle'
                 }`}
-            >
-              {displayStation ? displayStation.name : '방송국을 선택하세요'}
-            </strong>
-          </div>
-          {selected && displayTimeInfo.currentTime !== '--:--' && (
+              >
+                {displayStation ? displayStation.name : '방송국을 선택하세요'}
+              </strong>
+            </div>
             <div className="mr-2 overflow-hidden">
               <div
                 className={`text-gray-500 block whitespace-nowrap
-                  ${
-                    timeAnimationState === 'slide-out'
-                      ? 'station-slide-out'
-                      : timeAnimationState === 'slide-in'
-                      ? 'time-fade-in' // 시간 전용 페이드인 애니메이션 사용
-                      : 'station-idle'
-                  }`}
+                ${
+                  timeAnimationState === 'slide-out'
+                    ? 'station-slide-out'
+                    : timeAnimationState === 'slide-in'
+                    ? 'time-fade-in' // 시간 전용 페이드인 애니메이션 사용
+                    : 'station-idle'
+                }`}
               >
-                <span className="transition-colors duration-300">{displayTimeInfo.currentTime}</span> /{' '}
-                <span className="transition-colors duration-300">{displayTimeInfo.bufferedTime}</span>
+                <span className="transition-colors duration-300 font-lato leading-tight tabular-nums">{displayTimeInfo.currentTime}</span> /{' '}
+                <span className="transition-colors duration-300 font-lato leading-tight tabular-nums">{displayTimeInfo.bufferedTime}</span>
               </div>
             </div>
-          )}
+          </div>
           <img
             src="/radio/icon_prev_10s.png"
             alt="10초 전"

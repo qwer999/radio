@@ -573,7 +573,7 @@ function App() {
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
-        <StationList stations={stations} selectedId={selected?.id} onSelect={handleSelect} />
+        <StationList stations={stations} selectedId={selected?.id} onSelect={handleSelect} isPlaying={isPlaying} />
         <ExcludedList stations={excludedStations} onRestore={restoreStation} />
 
         <DragOverlay adjustScale={true} zIndex={100}>

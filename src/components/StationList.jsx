@@ -5,7 +5,7 @@ import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-
 import { useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 
-function SortableItem({ station, selected, onSelect }) {
+function SortableItem({ station, selected, onSelect, isPlaying }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: station.id });
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -22,7 +22,14 @@ function SortableItem({ station, selected, onSelect }) {
 
   return (
     <div ref={setNodeRef} style={style}>
-      <StationCard station={station} selected={selected} excluded={false} onClick={() => onSelect(station)} dragHandleProps={dragHandleProps} />
+      <StationCard
+        station={station}
+        selected={selected}
+        excluded={false}
+        onClick={() => onSelect(station)}
+        dragHandleProps={dragHandleProps}
+        isPlaying={isPlaying}
+      />
     </div>
   );
 }
@@ -55,14 +62,20 @@ function ExcludeDropArea() {
   );
 }
 
-function StationList({ stations, selectedId, onSelect }) {
+function StationList({ stations, selectedId, onSelect, isPlaying }) {
   return (
     <div className="w-full max-w-md mb-4">
       <h2 className="text-lg font-semibold mb-2 border-b border-gray-700 pb-1">재생 목록</h2>
       <SortableContext items={stations.map((s) => s.id)} strategy={verticalListSortingStrategy}>
         <div className="space-y-2">
           {stations.map((station) => (
-            <SortableItem key={station.id} station={station} selected={selectedId === station.id} onSelect={onSelect} />
+            <SortableItem
+              key={station.id}
+              station={station}
+              selected={selectedId === station.id}
+              onSelect={onSelect}
+              isPlaying={selectedId === station.id ? isPlaying : false}
+            />
           ))}
           <ExcludeDropArea />
           <StationDropArea />

@@ -610,10 +610,39 @@ function App() {
       </DndContext>
 
       <div
-        className="fixed left-0 bottom-0 w-full px-7 pt-4 pb-5 bg-[#000] flex flex-col justify-center z-[9999] transform transition-transform duration-500 ease-out"
-        style={{ background: 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, #000000 30px)' }}
+        className="fixed left-0 bottom-0 w-full px-7 pt-4  bg-[#000] flex flex-col justify-center z-[9999] transform transition-transform duration-500 ease-out"
+        style={{ background: 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, #000000 80px)' }}
       >
-        <div className="flex flex-row items-center text-[14px] gap-2 p-2 transition-opacity duration-300 ">
+        <div className="flex justify-around p-4 mx-auto border-box px-8 mb-3 gap-4 rounded-full bg-[#2CFFAA] w-[220px] justify transition-all duration-300">
+          <img
+            src="/radio/icon_prev.png"
+            alt="이전 채널"
+            className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 active:scale-90 active:rotate-3 z-10 relative opacity-50"
+            onClick={prevChannel}
+          />
+          {isPlaying ? (
+            <img
+              src="/radio/icon_pause.png"
+              alt="일시정지"
+              className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 active:scale-90 z-10 relative"
+              onClick={togglePlayPause}
+            />
+          ) : (
+            <img
+              src="/radio/icon_play.png"
+              alt="재생"
+              className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 active:scale-90 z-10 relative"
+              onClick={togglePlayPause}
+            />
+          )}
+          <img
+            src="/radio/icon_next.png"
+            alt="다음 채널"
+            className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 active:scale-90 active:-rotate-3 z-10 relative opacity-50"
+            onClick={nextChannel}
+          />
+        </div>
+        <div className="flex flex-row items-center text-[14px] gap-2 pb-5 transition-opacity duration-300 ">
           <div className="mr-auto overflow-hidden">
             <strong
               className={`text-gray-400 font-bold transition-colors duration-300 block whitespace-nowrap
@@ -656,36 +685,6 @@ function App() {
             alt="10초 후"
             className="w-[25px] h-[27px] cursor-pointer transition-all duration-200 active:scale-95 active:brightness-75"
             onClick={skipForward}
-          />
-        </div>
-
-        <div className="flex justify-around p-5 mx-auto border-box px-9 mb-3 gap-4 rounded-full bg-[#2CFFAA] w-[240px] justify transition-all duration-300">
-          <img
-            src="/radio/icon_prev.png"
-            alt="이전 채널"
-            className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 active:scale-90 active:rotate-3 z-10 relative opacity-50"
-            onClick={prevChannel}
-          />
-          {isPlaying ? (
-            <img
-              src="/radio/icon_pause.png"
-              alt="일시정지"
-              className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 active:scale-90 z-10 relative"
-              onClick={togglePlayPause}
-            />
-          ) : (
-            <img
-              src="/radio/icon_play.png"
-              alt="재생"
-              className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 active:scale-90 z-10 relative"
-              onClick={togglePlayPause}
-            />
-          )}
-          <img
-            src="/radio/icon_next.png"
-            alt="다음 채널"
-            className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 active:scale-90 active:-rotate-3 z-10 relative opacity-50"
-            onClick={nextChannel}
           />
         </div>
       </div>

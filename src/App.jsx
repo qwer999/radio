@@ -386,20 +386,37 @@ function App() {
       const displayTitle = selected.name;
       const displayArtist = selected.type.toUpperCase();
 
+      // ID 값을 표시 텍스트로 사용 (한글 깨짐 방지)
+      let stationDisplayText = selected.id.toUpperCase();
+
+      // ID가 너무 길면 두 줄로 나누기
+      let stationDisplayLines = [stationDisplayText];
+      if (stationDisplayText.length > 10) {
+        // 적절한 위치에서 줄바꿈
+        const midPoint = Math.ceil(stationDisplayText.length / 2);
+        stationDisplayLines = [stationDisplayText.slice(0, midPoint), stationDisplayText.slice(midPoint)];
+      }
+
+      // 두 줄로 표시할 텍스트 (| 기호로 줄바꿈)
+      const formattedText = stationDisplayLines.join('|');
+
+      // 색상 구분 없이 기본 회색 배경 사용
+      const bgColor = '333';
+
       // 고정된 메타데이터로 설정
       navigator.mediaSession.metadata = new MediaMetadata({
         title: displayTitle,
         artist: displayArtist,
         // album 필드 제거
         artwork: [
-          { src: 'https://placehold.co/96x96/333/fff?text=RADIO', sizes: '96x96', type: 'image/png' },
-          { src: 'https://placehold.co/128x128/333/fff?text=RADIO', sizes: '128x128', type: 'image/png' },
-          { src: 'https://placehold.co/192x192/333/fff?text=RADIO', sizes: '192x192', type: 'image/png' },
-          { src: 'https://placehold.co/256x256/333/fff?text=RADIO', sizes: '256x256', type: 'image/png' },
+          { src: `https://placehold.co/96x96/${bgColor}/fff?text=${encodeURIComponent(formattedText)}`, sizes: '96x96', type: 'image/png' },
+          { src: `https://placehold.co/128x128/${bgColor}/fff?text=${encodeURIComponent(formattedText)}`, sizes: '128x128', type: 'image/png' },
+          { src: `https://placehold.co/192x192/${bgColor}/fff?text=${encodeURIComponent(formattedText)}`, sizes: '192x192', type: 'image/png' },
+          { src: `https://placehold.co/256x256/${bgColor}/fff?text=${encodeURIComponent(formattedText)}`, sizes: '256x256', type: 'image/png' },
+          { src: `https://placehold.co/384x384/${bgColor}/fff?text=${encodeURIComponent(formattedText)}`, sizes: '384x384', type: 'image/png' },
+          { src: `https://placehold.co/512x512/${bgColor}/fff?text=${encodeURIComponent(formattedText)}`, sizes: '512x512', type: 'image/png' },
         ],
-      });
-
-      // 디버깅용 로그
+      }); // 디버깅용 로그
       console.log('Media session metadata 설정:', {
         title: displayTitle,
         artist: displayArtist,

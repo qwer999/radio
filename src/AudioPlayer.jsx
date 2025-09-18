@@ -20,29 +20,14 @@ export default function AudioPlayer({ src, nowPlaying, onPlaybackStateChange, on
     let hls;
     const audio = audioRef.current;
 
-    // 미디어 세션 초기 설정
-    if ('mediaSession' in navigator) {
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: nowPlaying?.title || 'qwerRadio',
-        artist: nowPlaying?.host || '라디오 방송',
-        album: '인터넷 라디오',
-        artwork: [{ src: 'https://placehold.co/600x600/2CFFAA/000000?text=qwerRadio', sizes: '600x600', type: 'image/png' }],
-      });
-    }
+    // 미디어 세션 관련 코드 제거 - App.jsx에서 관리
 
     // 이벤트 핸들러 함수들을 변수로 선언하여 나중에 제거할 수 있도록 함
     const handlePlay = () => {
       setIsPlaying(true);
       if ('mediaSession' in navigator) {
         navigator.mediaSession.playbackState = 'playing';
-
-        // 미디어 세션 메타데이터 설정
-        navigator.mediaSession.metadata = new MediaMetadata({
-          title: nowPlaying?.title || 'qwerRadio',
-          artist: nowPlaying?.host || '라디오 방송',
-          album: '인터넷 라디오',
-          artwork: [{ src: 'https://placehold.co/600x600/2CFFAA/000000?text=qwerRadio', sizes: '600x600', type: 'image/png' }],
-        });
+        // 미디어 세션 메타데이터 설정 코드 제거 - App.jsx에서 관리
       }
       if (onPlaybackStateChange) {
         onPlaybackStateChange(true);

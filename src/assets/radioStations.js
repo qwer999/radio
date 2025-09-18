@@ -1,15 +1,21 @@
 // 주요 방송국 데이터 및 API 정보
 export const radioStations = [
   {
-    id: 'kbs1',
-    name: 'KBS 1라디오',
-    api: 'https://cfpwwwapi.kbs.co.kr/api/v1/landing/live/channel_code/21',
+    id: 'kbs2fm',
+    name: 'KBS 쿨FM',
+    api: 'https://cfpwwwapi.kbs.co.kr/api/v1/landing/live/channel_code/25',
     type: 'kbs',
   },
   {
     id: 'kbs2',
-    name: 'KBS 2라디오',
+    name: 'KBS HappyFM',
     api: 'https://cfpwwwapi.kbs.co.kr/api/v1/landing/live/channel_code/22',
+    type: 'kbs',
+  },
+  {
+    id: 'kbs1',
+    name: 'KBS 1라디오',
+    api: 'https://cfpwwwapi.kbs.co.kr/api/v1/landing/live/channel_code/21',
     type: 'kbs',
   },
   {
@@ -20,21 +26,9 @@ export const radioStations = [
   },
   {
     id: 'kbs1fm',
-    name: 'KBS 1FM',
+    name: 'KBS Classic FM',
     api: 'https://cfpwwwapi.kbs.co.kr/api/v1/landing/live/channel_code/24',
     type: 'kbs',
-  },
-  {
-    id: 'kbs2fm',
-    name: 'KBS 2FM',
-    api: 'https://cfpwwwapi.kbs.co.kr/api/v1/landing/live/channel_code/25',
-    type: 'kbs',
-  },
-  {
-    id: 'sbs_gorilla',
-    name: 'SBS 고릴라디오M',
-    api: 'https://apis.sbs.co.kr/play-api/1.0/livestream/sbsdmbpc/sbsdmb?protocol=hls&ssl=Y',
-    type: 'sbs',
   },
   {
     id: 'mbc_fm4u',
@@ -58,6 +52,12 @@ export const radioStations = [
     id: 'sbs_lovefm',
     name: 'SBS 러브FM',
     api: 'https://apis.sbs.co.kr/play-api/1.0/livestream/lovepc/lovefm?protocol=hls&ssl=Y',
+    type: 'sbs',
+  },
+  {
+    id: 'sbs_gorilla',
+    name: 'SBS 고릴라M',
+    api: 'https://apis.sbs.co.kr/play-api/1.0/livestream/sbsdmbpc/sbsdmb?protocol=hls&ssl=Y',
     type: 'sbs',
   },
   {

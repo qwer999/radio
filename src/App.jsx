@@ -378,12 +378,19 @@ function App() {
       if (audio) audio.pause();
     };
 
-    // Media session setup
-    if (selected) {
+    // 미디어 세션 메타데이터 설정 함수
+    const updateMediaMetadata = () => {
+      if (!selected) return;
+
+      // 방송국 이름과 타입으로 고정
+      const displayTitle = selected.name;
+      const displayArtist = selected.type.toUpperCase();
+
+      // 고정된 메타데이터로 설정
       navigator.mediaSession.metadata = new MediaMetadata({
-        title: selected.name,
-        artist: '대한민국 인터넷 라디오',
-        album: nowPlaying?.title || '라이브 방송',
+        title: displayTitle,
+        artist: displayArtist,
+        // album 필드 제거
         artwork: [
           { src: 'https://placehold.co/96x96/333/fff?text=RADIO', sizes: '96x96', type: 'image/png' },
           { src: 'https://placehold.co/128x128/333/fff?text=RADIO', sizes: '128x128', type: 'image/png' },
@@ -391,7 +398,16 @@ function App() {
           { src: 'https://placehold.co/256x256/333/fff?text=RADIO', sizes: '256x256', type: 'image/png' },
         ],
       });
-    }
+
+      // 디버깅용 로그
+      console.log('Media session metadata 설정:', {
+        title: displayTitle,
+        artist: displayArtist,
+      });
+    };
+
+    // 메타데이터 설정
+    updateMediaMetadata();
 
     // Register media button action handlers
     navigator.mediaSession.setActionHandler('play', handlePlay);
@@ -406,7 +422,7 @@ function App() {
       navigator.mediaSession.setActionHandler('previoustrack', null);
       navigator.mediaSession.setActionHandler('nexttrack', null);
     };
-  }, [selected, nowPlaying, streamUrl, prevChannel, nextChannel]);
+  }, [selected, prevChannel, nextChannel]); // nowPlaying과 streamUrl 의존성 제거
 
   // Auto-play audio when streamUrl changes
   useEffect(() => {
@@ -638,7 +654,7 @@ function App() {
         </div>
         <div className="flex flex-row items-center text-[14px] gap-2 pb-5 transition-opacity duration-300 ">
           <div className="flex flex-col mr-auto justify-start  items-start">
-            <div className="mr-auto overflow-hidden">
+            <div className="mr-auto overflow-hidden flex flex-col">
               <strong
                 className={`text-white font-bold transition-colors duration-300 block whitespace-nowrap
                 ${

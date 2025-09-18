@@ -37,8 +37,8 @@ const StationCard = React.memo(function StationCard({
       style={{ touchAction: 'auto' }} // 일반 영역은 스크롤 허용
     >
       <span
-        className={`w-8 h-8 mr-[10px] ${
-          isDragOverlay ? 'bg-gray-700' : 'bg-gray-700'
+        className={`w-8 h-8 mr-[10px] !text-[18px] ${
+          isDragOverlay ? 'bg-gray-700' : 'bg-none opacity-45'
         } flex items-center justify-center drag-handle cursor-grab active:cursor-grabbing`}
         style={{ touchAction: 'none' }} // 드래그 핸들만 터치 제한
         {...dragHandleProps}

@@ -6,9 +6,19 @@ import { useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 
 function SortableItem({ station, selected, onSelect, isPlaying }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: station.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: station.id,
+    // 드래그 시 변환 동작 수정
+    modifiers: [],
+  });
+
   const style = {
-    transform: CSS.Transform.toString(transform),
+    // transform과 CSS 처리 방식 변경
+    transform: CSS.Transform.toString({
+      ...transform,
+      scaleX: 1, // 항상 원래 크기 유지
+      scaleY: 1, // 항상 원래 크기 유지
+    }),
     transition,
     zIndex: isDragging ? 50 : 'auto',
     opacity: isDragging ? 0.5 : 1,
@@ -50,10 +60,9 @@ function ExcludeDropArea() {
 
 function StationList({ stations, selectedId, onSelect, isPlaying }) {
   return (
-    <div className="w-full max-w-md mb-4">
-      <h2 className="text-lg font-semibold mb-2 border-b border-gray-700 pb-1">재생 목록</h2>
+    <div className="w-full max-w-[600px] mb-4 p-0 pt-8 pb-[100px] playlist-font">
       <SortableContext items={stations.map((s) => s.id)} strategy={verticalListSortingStrategy}>
-        <div className="space-y-2">
+        <div>
           {stations.map((station) => (
             <SortableItem
               key={station.id}

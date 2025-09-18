@@ -2,10 +2,27 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
 
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css');
+
+.playlist-font {
+  /* font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; */
+
+  font-family: 'Pretendard Variable', sans-serif;
+  font-weight: 300;
+
+  letter-spacing: -0.02em; /* 자간 조정으로 더 세련된 느낌으로 */
+}
+@media screen and (min-width: 768px) {
+  .playlist-font {
+    font-family: 'Pretendard Variable', sans-serif;
+    font-weight: 200;
+    letter-spacing: -0.02em; /* 자간 조정으로 더 세련된 느낌으로 */
+  }
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
-  font-weight: 400;
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);

@@ -432,12 +432,19 @@ function App() {
     navigator.mediaSession.setActionHandler('previoustrack', prevChannel);
     navigator.mediaSession.setActionHandler('nexttrack', nextChannel);
 
+    // iOS에서 10초 이동 버튼을 비활성화하기 위해 빈 핸들러 설정
+    // 이렇게 하면 시스템은 이 기능을 지원하지 않는다고 인식하고 채널 이동 버튼만 표시함
+    navigator.mediaSession.setActionHandler('seekbackward', null);
+    navigator.mediaSession.setActionHandler('seekforward', null);
+
     return () => {
       // Cleanup function: remove handlers
       navigator.mediaSession.setActionHandler('play', null);
       navigator.mediaSession.setActionHandler('pause', null);
       navigator.mediaSession.setActionHandler('previoustrack', null);
       navigator.mediaSession.setActionHandler('nexttrack', null);
+      navigator.mediaSession.setActionHandler('seekbackward', null);
+      navigator.mediaSession.setActionHandler('seekforward', null);
     };
   }, [selected, prevChannel, nextChannel]); // nowPlaying과 streamUrl 의존성 제거
 
@@ -623,7 +630,7 @@ function App() {
         <StationList stations={stations} selectedId={selected?.id} onSelect={handleSelect} isPlaying={isPlaying} />
         <ExcludedList stations={excludedStations} onRestore={restoreStation} />
 
-        <DragOverlay adjustScale={true} zIndex={100}>
+        <DragOverlay adjustScale={false} zIndex={100}>
           {activeStation ? (
             <StationCard
               station={activeStation}
@@ -637,35 +644,35 @@ function App() {
       </DndContext>
 
       <div
-        className="fixed left-0 bottom-0 w-full px-7 pt-4  bg-[#000] flex flex-col justify-center z-[9999] transform transition-transform duration-500 ease-out"
+        className="fixed left-0 bottom-0 w-full px-6 pt-4  bg-[#000] flex flex-col justify-center z-[9999] transform transition-transform duration-500 ease-out"
         style={{ background: 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, #000000 80px)' }}
       >
         <div className="flex justify-around p-4 mx-auto border-box px-8 mb-3 gap-4 rounded-full bg-[#2CFFAA] w-[220px] justify transition-all duration-300">
           <img
             src="/radio/icon_prev.png"
             alt="이전 채널"
-            className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 active:scale-90 active:rotate-3 z-10 relative opacity-50"
+            className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 active:scale-80 active:rotate-3 z-10 relative opacity-50"
             onClick={prevChannel}
           />
           {isPlaying ? (
             <img
               src="/radio/icon_pause.png"
               alt="일시정지"
-              className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 active:scale-90 z-10 relative"
+              className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 active:scale-80 z-10 relative"
               onClick={togglePlayPause}
             />
           ) : (
             <img
               src="/radio/icon_play.png"
               alt="재생"
-              className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 active:scale-90 z-10 relative"
+              className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 active:scale-80 z-10 relative"
               onClick={togglePlayPause}
             />
           )}
           <img
             src="/radio/icon_next.png"
             alt="다음 채널"
-            className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 active:scale-90 active:-rotate-3 z-10 relative opacity-50"
+            className="w-[30px] h-[30px] cursor-pointer transition-all duration-300 active:scale-80 active:-rotate-3 z-10 relative opacity-50"
             onClick={nextChannel}
           />
         </div>
@@ -710,13 +717,13 @@ function App() {
           <img
             src="/radio/icon_prev_10s.png"
             alt="10초 전"
-            className="w-[25px] h-[27px] cursor-pointer transition-all duration-200 active:scale-95 active:brightness-75"
+            className="w-[25px] h-[27px] cursor-pointer transition-all duration-200 active:scale-85 active:brightness-75"
             onClick={skipBackward}
           />
           <img
             src="/radio/icon_next_10s.png"
             alt="10초 후"
-            className="w-[25px] h-[27px] cursor-pointer transition-all duration-200 active:scale-95 active:brightness-75"
+            className="w-[25px] h-[27px] cursor-pointer transition-all duration-200 active:scale-85 active:brightness-75"
             onClick={skipForward}
           />
         </div>

@@ -30,27 +30,31 @@ const StationCard = React.memo(function StationCard({
   }, [isPlaying, selected]);
   return (
     <div
-      className={`flex flex-row w-full text-left py-[4px] px-[30px] cursor-pointer transition-all duration-150 items-center text-[24px]
-        ${excluded ? ' text-gray-400 ' : selected ? ' border-blue-500' : 'opacity-45 !text-[20px] border-gray-700'}
-        ${isDragOverlay ? 'bg-black text-white opacity-100 border-blue-500' : ''}`}
+      className={`flex flex-row w-full text-left py-[6px] m-0 px-[8px] md:px-[30px] cursor-pointer !transition-all duration-150 items-center text-[30px] md:text-[34px]
+        ${excluded ? 'text-gray-400' : selected ? '' : 'opacity-45 !text-[21px] md:!text-[30px] !transition-all border-gray-700'}
+        ${isDragOverlay ? ' text-white opacity-100' : ''}
+        playlist-font`}
       onClick={onClick}
-      style={{ touchAction: 'auto' }} // 일반 영역은 스크롤 허용
+      style={{
+        touchAction: 'auto', // 일반 영역은 스크롤 허용
+        height: isDragOverlay ? 'auto' : undefined, // 드래그 중 높이 유지
+      }}
     >
       <span
-        className={`w-8 h-8 mr-[10px] !text-[18px] ${
-          isDragOverlay ? 'bg-gray-700' : 'bg-none opacity-45'
+        className={`w-8 h-8 mr-[2px] !text-[18px] md:!text-[30px]  ${
+          isDragOverlay ? '' : 'bg-none opacity-45'
         } flex items-center justify-center drag-handle cursor-grab active:cursor-grabbing`}
         style={{ touchAction: 'none' }} // 드래그 핸들만 터치 제한
         {...dragHandleProps}
       >
         ≡
       </span>
-      <span className="font-medium select-none">{station.name}</span>
+      <span className=" select-none">{station.name}</span>
       {selected && (
         <div className="ml-2 flex items-center">
-          <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-gray-900 relative">
+          <div className="w-8 h-8  md:w-12 md:h-12 rounded-full overflow-hidden flex items-center justify-center bg-gray-900 relative">
             {/* 항상 표시되는 선택 표시 (원형) */}
-            <div className="absolute inset-0 rounded-full bg-gray-500 opacity-0" style={{ transform: 'scale(0.8)' }} />
+            <div className="absolute inset-0 rounded-full bg-gray-500 opacity-0" style={{ transform: 'scale(1)' }} />
 
             {/* catjam GIF - fade 효과 적용 */}
             <img

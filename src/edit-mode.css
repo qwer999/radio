@@ -1,0 +1,96 @@
+/* 편집 모드 애니메이션 */
+.station-edit-slide {
+  transform: translateX(0);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.station-edit-slide.active {
+  transform: translateX(32px); /* 8px = 2rem */
+}
+
+/* 드래그 핸들 관련 스타일 */
+.drag-handle {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: left center;
+}
+
+/* 스테이션 아이템 컨테이너 스타일 */
+.station-item-container {
+  position: relative;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.station-item-container.edit-mode-active {
+  transform: translateX(0.5rem); /* 편집 모드일 때 아이템을 살짝 오른쪽으로 이동 */
+}
+
+/* 드래그 핸들 애니메이션 */
+@keyframes handleFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px) scale(0.8);
+    width: 0;
+  }
+  to {
+    opacity: 0.85;
+    transform: translateX(0) scale(1);
+    width: 2rem;
+  }
+}
+
+@keyframes handleFadeOut {
+  from {
+    opacity: 0.85;
+    transform: translateX(0) scale(1);
+    width: 2rem;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-10px) scale(0.8);
+    width: 0;
+  }
+}
+
+/* 편집 모드 토글 버튼 스타일 */
+.edit-toggle-btn {
+  transition: background-color 0.3s ease-in-out;
+}
+
+.edit-toggle-btn.active {
+  background-color: #2563eb; /* blue-600 */
+}
+
+/* 드래그 핸들 나타남/사라짐 애니메이션 */
+@keyframes fadeInHandle {
+  from {
+    opacity: 0;
+    transform: translateX(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeOutHandle {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-5px);
+  }
+}
+
+.handle-visible {
+  animation: fadeInHandle 0.2s forwards;
+  display: flex;
+}
+
+.handle-hidden {
+  animation: fadeOutHandle 0.2s forwards;
+}

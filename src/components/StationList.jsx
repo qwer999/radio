@@ -5,7 +5,7 @@ import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-
 import { useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 
-function SortableItem({ station, selected, onSelect, isPlaying }) {
+function SortableItem({ station, selected, onSelect, isPlaying, isEditMode }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: station.id,
     // 드래그 시 변환 동작 수정
@@ -31,7 +31,13 @@ function SortableItem({ station, selected, onSelect, isPlaying }) {
   };
 
   return (
-    <div ref={setNodeRef} style={style}>
+    <div
+      ref={setNodeRef}
+      style={{
+        ...style,
+      }}
+      className={`transition-all duration-300 ease-out station-item-container ${isEditMode ? 'edit-mode-active' : ''}`}
+    >
       <StationCard
         station={station}
         selected={selected}
@@ -39,6 +45,7 @@ function SortableItem({ station, selected, onSelect, isPlaying }) {
         onClick={() => onSelect(station)}
         dragHandleProps={dragHandleProps}
         isPlaying={isPlaying}
+        isEditMode={isEditMode}
       />
     </div>
   );
@@ -58,7 +65,7 @@ function ExcludeDropArea() {
   );
 }
 
-function StationList({ stations, selectedId, onSelect, isPlaying }) {
+function StationList({ stations, selectedId, onSelect, isPlaying, isEditMode }) {
   return (
     <div className="w-full max-w-[600px] mb-4 p-0 pt-8 pb-[100px] playlist-font">
       <SortableContext items={stations.map((s) => s.id)} strategy={verticalListSortingStrategy}>
@@ -70,6 +77,7 @@ function StationList({ stations, selectedId, onSelect, isPlaying }) {
               selected={selectedId === station.id}
               onSelect={onSelect}
               isPlaying={selectedId === station.id ? isPlaying : false}
+              isEditMode={isEditMode}
             />
           ))}
           <ExcludeDropArea />

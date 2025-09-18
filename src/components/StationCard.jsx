@@ -9,6 +9,7 @@ const StationCard = React.memo(function StationCard({
   isDragOverlay = false,
   dragHandleProps = {},
   isPlaying = false,
+  isEditMode = false,
 }) {
   // fade 효과를 위한 상태
   const [opacity, setOpacity] = useState(0);
@@ -31,7 +32,7 @@ const StationCard = React.memo(function StationCard({
   return (
     <div
       className={`flex flex-row w-full text-left py-[6px] m-0 px-[8px] md:px-[30px] cursor-pointer !transition-all duration-150 items-center text-[30px] md:text-[34px]
-        ${excluded ? 'text-gray-400' : selected ? '' : 'opacity-45 !text-[21px] md:!text-[30px] !transition-all border-gray-700'}
+        ${excluded ? '!text-[18px] !py-1 opacity-45' : selected ? '' : 'opacity-45 !text-[21px] md:!text-[30px] !transition-all border-gray-700'}
         ${isDragOverlay ? ' text-white opacity-100' : ''}
         playlist-font`}
       onClick={onClick}
@@ -41,10 +42,18 @@ const StationCard = React.memo(function StationCard({
       }}
     >
       <span
-        className={`w-8 h-8 mr-[2px] !text-[18px] md:!text-[30px]  ${
-          isDragOverlay ? '' : 'bg-none opacity-45'
-        } flex items-center justify-center drag-handle cursor-grab active:cursor-grabbing`}
-        style={{ touchAction: 'none' }} // 드래그 핸들만 터치 제한
+        className={`w-8 h-8 mr-[2px] !text-[18px] md:!text-[30px] 
+          ${isDragOverlay ? '' : 'bg-none'}
+          flex items-center justify-center drag-handle cursor-grab active:cursor-grabbing transition-all duration-300`}
+        style={{
+          touchAction: 'none',
+          willChange: 'opacity, transform',
+          opacity: isEditMode ? 0.85 : 0,
+          width: isEditMode ? '2rem' : '0',
+          marginRight: isEditMode ? '2px' : '0',
+          overflow: 'hidden',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        }} // 드래그 핸들만 터치 제한
         {...dragHandleProps}
       >
         ≡

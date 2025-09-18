@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import StationList from './components/StationList';
 import ExcludedList from './components/ExcludedList';
 import StationCard from './components/StationCard';
-import PerformanceMonitor from './components/PerformanceMonitor';
+import ResetPlaylistButton from './components/ResetPlaylistButton';
 import { radioStations as defaultStations } from './assets/radioStations';
 import AudioPlayer from './AudioPlayer';
 import './App.css';
@@ -81,6 +81,7 @@ function App() {
   const [timeInfo, setTimeInfo] = useState({ currentTime: '--:--', bufferedTime: '--:--' });
   const [activeId, setActiveId] = useState(null); // ID of item being dragged
   const [activeStation, setActiveStation] = useState(null); // Station being dragged
+  const [isEditMode, setIsEditMode] = useState(false); // 편집 모드 상태
 
   // 방송국 애니메이션 상태
   const [stationAnimationState, setStationAnimationState] = useState('idle'); // 'idle', 'slide-out', 'slide-in'
@@ -608,12 +609,18 @@ function App() {
     setDisplayTimeInfo({ currentTime: '--:--', bufferedTime: '--:--' });
   };
 
-  // Global access for PerformanceMonitor
+  // Global access for playlist reset functionality
   useEffect(() => {
     window.resetPlaylist = handleResetPlaylist;
 
+    // 편집 모드 토글을 위한 전역 함수
+    window.toggleStationEditMode = (value) => {
+      setIsEditMode(value);
+    };
+
     return () => {
       window.resetPlaylist = undefined;
+      window.toggleStationEditMode = undefined;
     };
   }, []);
 
@@ -627,8 +634,8 @@ function App() {
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
-        <StationList stations={stations} selectedId={selected?.id} onSelect={handleSelect} isPlaying={isPlaying} />
-        <ExcludedList stations={excludedStations} onRestore={restoreStation} />
+        <StationList stations={stations} selectedId={selected?.id} onSelect={handleSelect} isPlaying={isPlaying} isEditMode={isEditMode} />
+        <ExcludedList stations={excludedStations} onRestore={restoreStation} isEditMode={isEditMode} />
 
         <DragOverlay adjustScale={false} zIndex={100}>
           {activeStation ? (
@@ -734,8 +741,8 @@ function App() {
         <AudioPlayer src={streamUrl} nowPlaying={nowPlaying} onPlaybackStateChange={handlePlaybackStateChange} onTimeUpdate={handleTimeUpdate} />
       </div>
 
-      {/* 성능 모니터링 컴포넌트 */}
-      <PerformanceMonitor />
+      {/* 플레이리스트 리셋 버튼 */}
+      <ResetPlaylistButton />
     </div>
   );
 }

@@ -3,7 +3,7 @@ import React from 'react';
 import { useDroppable, useDraggable } from '@dnd-kit/core';
 import StationCard from './StationCard';
 
-function DraggableExcludedStation({ station, onRestore }) {
+function DraggableExcludedStation({ station, onRestore, isEditMode }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: station.id,
   });
@@ -21,8 +21,15 @@ function DraggableExcludedStation({ station, onRestore }) {
   };
 
   return (
-    <div ref={setNodeRef} style={style}>
-      <StationCard station={station} selected={false} excluded={true} onClick={() => onRestore(station)} dragHandleProps={dragHandleProps} />
+    <div ref={setNodeRef} style={style} className={`transition-all duration-300 ease-out ${isEditMode ? 'translate-x-0' : ''}`}>
+      <StationCard 
+        station={station} 
+        selected={false} 
+        excluded={true} 
+        onClick={() => onRestore(station)} 
+        dragHandleProps={dragHandleProps}
+        isEditMode={isEditMode}
+      />
     </div>
   );
 }
@@ -41,13 +48,13 @@ function DroppableArea({ id }) {
   );
 }
 
-function ExcludedList({ stations, onRestore }) {
+function ExcludedList({ stations, onRestore, isEditMode }) {
   return (
     <div className="w-full max-w-md mb-6">
       <h2 className="text-lg font-semibold mb-2 border-b border-gray-700 pb-1 text-gray-400">제외된 방송국</h2>
       <div className="space-y-2">
         {stations.map((station) => (
-          <DraggableExcludedStation key={station.id} station={station} onRestore={onRestore} />
+          <DraggableExcludedStation key={station.id} station={station} onRestore={onRestore} isEditMode={isEditMode} />
         ))}
         <DroppableArea id="excluded-drop-area" />
       </div>

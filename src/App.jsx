@@ -4,6 +4,7 @@ import ExcludedList from './components/ExcludedList';
 import StationCard from './components/StationCard';
 import ResetPlaylistButton from './components/ResetPlaylistButton';
 import { radioStations as defaultStations } from './assets/radioStations';
+import { enrichAllStations } from './assets/radioSchedule';
 import AudioPlayer from './AudioPlayer';
 import './App.css';
 import {
@@ -82,6 +83,30 @@ function App() {
   const [activeId, setActiveId] = useState(null); // ID of item being dragged
   const [activeStation, setActiveStation] = useState(null); // Station being dragged
   const [isEditMode, setIsEditMode] = useState(false); // 편집 모드 상태
+
+  // 방송국 정보 가져오기 (MBC, KBS 등)
+  useEffect(() => {
+    async function loadSchedules() {
+      try {
+        // 방송국에 현재 프로그램 정보 추가
+        const enrichedStations = await enrichAllStations(stations);
+        setStations(enrichedStations);
+
+        // 제외된 방송국에도 현재 프로그램 정보 추가
+        const enrichedExcludedStations = await enrichAllStations(excludedStations);
+        setExcludedStations(enrichedExcludedStations);
+      } catch (error) {
+        console.error('방송 편성표 로딩 오류:', error);
+      }
+    }
+
+    loadSchedules();
+
+    // 프로그램 정보 주기적 업데이트 (15분마다)
+    const scheduleUpdateInterval = setInterval(loadSchedules, 15 * 60 * 1000);
+
+    return () => clearInterval(scheduleUpdateInterval);
+  }, []); // 컴포넌트 마운트 시 한 번만 실행
 
   // 방송국 애니메이션 상태
   const [stationAnimationState, setStationAnimationState] = useState('idle'); // 'idle', 'slide-out', 'slide-in'

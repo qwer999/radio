@@ -109,10 +109,60 @@ function App() {
 
     loadSchedules();
 
-    // 프로그램 정보 주기적 업데이트 (15분마다)
-    const scheduleUpdateInterval = setInterval(loadSchedules, 15 * 60 * 1000);
+    // 서울 시간대 기준으로 정시부터 15분 단위로 업데이트 설정
+    const setupScheduleUpdates = () => {
+      const now = new Date();
 
-    return () => clearInterval(scheduleUpdateInterval);
+      // 다음 15분 간격 시간 계산 (00, 15, 30, 45분)
+      const minutes = now.getMinutes();
+      const nextMinutes = Math.ceil(minutes / 15) * 15;
+      const nextTime = new Date();
+      nextTime.setMinutes(nextMinutes);
+      nextTime.setSeconds(0);
+      nextTime.setMilliseconds(0);
+
+      // 현재 시간이 이미 45분이면 다음 정각으로 설정
+      if (minutes >= 45) {
+        nextTime.setHours(nextTime.getHours() + 1);
+        nextTime.setMinutes(0);
+      }
+
+      // 다음 업데이트까지 남은 시간 (밀리초)
+      const timeUntilNextUpdate = nextTime - now;
+
+      // 첫 번째 업데이트를 위한 타이머
+      const initialTimer = setTimeout(() => {
+        // 15분 간격 시간에 업데이트 실행
+        loadSchedules();
+
+        // 이후부터는 정확히 15분마다 실행
+        const intervalId = setInterval(loadSchedules, 15 * 60 * 1000);
+
+        // 초기 타이머 참조 제거
+        initialTimerRef.current = null;
+        // 인터벌 ID 저장
+        intervalIdRef.current = intervalId;
+      }, timeUntilNextUpdate);
+
+      // 타이머 참조 저장
+      initialTimerRef.current = initialTimer;
+    };
+
+    // 타이머와 인터벌 참조를 저장할 ref
+    const initialTimerRef = useRef(null);
+    const intervalIdRef = useRef(null);
+
+    setupScheduleUpdates();
+
+    // 컴포넌트 언마운트 시 모든 타이머 정리
+    return () => {
+      if (initialTimerRef.current) {
+        clearTimeout(initialTimerRef.current);
+      }
+      if (intervalIdRef.current) {
+        clearInterval(intervalIdRef.current);
+      }
+    };
   }, []); // 컴포넌트 마운트 시 한 번만 실행
 
   // 방송국 애니메이션 상태

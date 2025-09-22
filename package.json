@@ -17,6 +17,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "hls.js": "^1.6.11",
+    "prop-types": "^15.8.1",
     "react": "^19.1.1",
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^19.1.1"

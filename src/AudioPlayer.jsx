@@ -20,6 +20,9 @@ export default function AudioPlayer({ src, nowPlaying, onPlaybackStateChange, on
     let hls;
     const audio = audioRef.current;
 
+    // src 변경 시 모든 미디어 작업 취소를 위한 AbortController
+    const abortController = new AbortController();
+
     // 미디어 세션 관련 코드 제거 - App.jsx에서 관리
 
     // 이벤트 핸들러 함수들을 변수로 선언하여 나중에 제거할 수 있도록 함
@@ -79,27 +82,49 @@ export default function AudioPlayer({ src, nowPlaying, onPlaybackStateChange, on
     };
 
     if (audio) {
-      if (Hls.isSupported()) {
-        hls = new Hls({
-          startPosition: -1,
-          liveSyncDurationCount: 12,
-          maxBufferLength: 200,
-        });
-        hls.loadSource(src);
-        hls.attachMedia(audio);
-        hls.on(Hls.Events.MANIFEST_PARSED, function () {
-          audio.play().catch((e) => console.log('자동 재생 실패:', e));
-        });
+      // 먼저 기존 재생 중인 오디오 정지 및 리소스 해제
+      audio.pause();
+      audio.src = '';
+      audio.load();
 
-        // HLS 관련 이벤트 리스너
-        audio.addEventListener('pause', handleHlsPause);
-        audio.addEventListener('play', handleHlsPlay);
-      } else if (audio.canPlayType('application/vnd.apple.mpegurl')) {
-        audio.src = src;
-        audio.play().catch((e) => console.log('자동 재생 실패:', e));
-      } else {
-        audio.src = src;
-      }
+      // 약간의 지연 후 새 스트림 로드 (이전 요청이 완전히 중단되도록)
+      setTimeout(() => {
+        // 컴포넌트가 언마운트되었는지 확인
+        if (abortController.signal.aborted) return;
+
+        if (Hls.isSupported()) {
+          hls = new Hls({
+            startPosition: -1,
+            liveSyncDurationCount: 12,
+            maxBufferLength: 200,
+          });
+          hls.loadSource(src);
+          hls.attachMedia(audio);
+          hls.on(Hls.Events.MANIFEST_PARSED, function () {
+            // 컴포넌트가 여전히 마운트되어 있는지 확인
+            if (!abortController.signal.aborted) {
+              audio.play().catch((e) => {
+                if (e.name !== 'AbortError') {
+                  console.log('자동 재생 실패:', e);
+                }
+              });
+            }
+          });
+
+          // HLS 관련 이벤트 리스너
+          audio.addEventListener('pause', handleHlsPause);
+          audio.addEventListener('play', handleHlsPlay);
+        } else if (audio.canPlayType('application/vnd.apple.mpegurl')) {
+          audio.src = src;
+          audio.play().catch((e) => {
+            if (e.name !== 'AbortError') {
+              console.log('자동 재생 실패:', e);
+            }
+          });
+        } else {
+          audio.src = src;
+        }
+      }, 100); // 100ms 지연
 
       // 일반 오디오 이벤트 리스너
       audio.addEventListener('play', handlePlay);
@@ -107,15 +132,23 @@ export default function AudioPlayer({ src, nowPlaying, onPlaybackStateChange, on
       audio.addEventListener('timeupdate', handleTimeUpdate);
     }
 
-    // 클린업 함수: 메모리 누수 방지
+    // 클린업 함수: 메모리 누수 방지 및 진행 중인 작업 중단
     return () => {
+      // 모든 진행중인 작업 중단
+      abortController.abort();
+
+      // 오디오 리소스 정리
       if (audio) {
+        audio.pause();
+        audio.src = '';
+        audio.load();
         audio.removeEventListener('play', handlePlay);
         audio.removeEventListener('pause', handlePause);
         audio.removeEventListener('timeupdate', handleTimeUpdate);
         audio.removeEventListener('pause', handleHlsPause);
         audio.removeEventListener('play', handleHlsPlay);
       }
+      // HLS 리소스 정리
       if (hls) {
         hls.destroy();
       }

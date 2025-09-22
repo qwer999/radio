@@ -424,7 +424,22 @@ function App() {
 
   // Update stream when initially loading or when selected changes
   useEffect(() => {
-    fetchStream(selected);
+    if (selected) {
+      // 기존 오디오 플레이어 일시 중지 (새 스트림 로드 전에 기존 플레이어 리소스 해제)
+      const audio = document.querySelector('audio');
+      if (audio) {
+        audio.pause();
+        audio.src = '';
+        audio.load();
+      }
+
+      // 약간의 지연 후 새 스트림 로드
+      const timeoutId = setTimeout(() => {
+        fetchStream(selected);
+      }, 100);
+
+      return () => clearTimeout(timeoutId);
+    }
     // eslint-disable-next-line
   }, [selected]);
 

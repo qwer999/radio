@@ -7,6 +7,7 @@ import { radioStations as defaultStations } from './assets/radioStations';
 import { enrichAllStations } from './assets/radioSchedule';
 import AudioPlayer from './AudioPlayer';
 import { isCacheValid, clearAllCaches } from './utils/cacheUtils';
+import { fetchAllSchedules, isMemoryCacheValid, clearMemoryCache, updateStationSchedule, getCurrentProgramFromMemory } from './utils/scheduleUtils';
 import './App.css';
 import {
   DndContext,
@@ -84,15 +85,25 @@ function App() {
   const [activeId, setActiveId] = useState(null); // ID of item being dragged
   const [activeStation, setActiveStation] = useState(null); // Station being dragged
   const [isEditMode, setIsEditMode] = useState(false); // 편집 모드 상태
+  const [scheduleData, setScheduleData] = useState(null); // 메모리에 저장된 편성표 데이터
+  const selectedStationRef = useRef(null); // 현재 선택된 방송국 참조
 
   // 방송국 정보 가져오기 (MBC, KBS 등)
   useEffect(() => {
     async function loadSchedules() {
       try {
-        // 캐시 유효성 검사 - 캐시가 유효하지 않으면 모든 캐시 초기화
-        if (!isCacheValid()) {
-          console.log('캐시가 만료되었습니다. 모든 캐시를 초기화합니다.');
-          clearAllCaches();
+        // 메모리 캐시 또는 로컬스토리지 캐시 확인
+        if (!isMemoryCacheValid()) {
+          console.log('메모리 캐시가 없거나 만료되었습니다. 모든 편성표 데이터를 새로 가져옵니다.');
+
+          // 메모리 캐시가 유효하지 않으면 로컬스토리지 캐시도 초기화
+          if (!isCacheValid()) {
+            console.log('로컬스토리지 캐시도 만료되었습니다. 모든 캐시를 초기화합니다.');
+            clearAllCaches();
+          }
+
+          // 모든 스케줄 데이터를 한 번에 가져와 메모리에 저장
+          await fetchAllSchedules();
         }
 
         // 방송국에 현재 프로그램 정보 추가
@@ -109,11 +120,57 @@ function App() {
 
     loadSchedules();
 
-    // 프로그램 정보 주기적 업데이트 (15분마다)
-    const scheduleUpdateInterval = setInterval(loadSchedules, 15 * 60 * 1000);
+    // 1분 간격으로 모든 방송국 업데이트
+    const scheduleUpdateInterval = setInterval(loadSchedules, 60 * 1000);
 
-    return () => clearInterval(scheduleUpdateInterval);
+    // 선택된 방송국의 편성표만 2분마다 업데이트하는 기능 설정
+    const setupSelectedStationUpdates = () => {
+      // 2분마다 선택된 방송국의 편성표 업데이트
+      const stationUpdateIntervalId = setInterval(async () => {
+        if (selectedStationRef.current) {
+          const station = selectedStationRef.current;
+          console.log('선택된 방송국 편성표 업데이트 실행:', station.name);
+
+          // 방송국 유형에 따라 적절한 채널 타입 결정
+          let stationType, channelType;
+
+          if (station.type === 'mbc') {
+            stationType = 'mbc';
+            channelType = station.mbcChannelType || (station.id === 'mbc_fm4u' ? 'fm4u' : 'fm');
+          } else if (station.type === 'kbs') {
+            stationType = 'kbs';
+            channelType = station.kbsChannelCode || '22'; // 기본값: 해피FM
+          } else if (station.type === 'sbs') {
+            stationType = 'sbs';
+            channelType = station.sbsChannelType || 'Power'; // 기본값: 파워FM
+          }
+
+          if (stationType && channelType) {
+            // 해당 방송국의 편성표만 업데이트
+            await updateStationSchedule(stationType, channelType);
+
+            // 방송국 정보에 현재 프로그램 정보 업데이트
+            loadSchedules();
+          }
+        }
+      }, 2 * 60 * 1000); // 2분마다 실행
+
+      return stationUpdateIntervalId;
+    };
+
+    const stationUpdateIntervalId = setupSelectedStationUpdates();
+
+    // 컴포넌트 언마운트 시 모든 타이머 정리
+    return () => {
+      clearInterval(scheduleUpdateInterval);
+      clearInterval(stationUpdateIntervalId);
+    };
   }, []); // 컴포넌트 마운트 시 한 번만 실행
+
+  // 선택된 방송국이 변경될 때마다 참조 업데이트
+  useEffect(() => {
+    selectedStationRef.current = selected;
+  }, [selected]);
 
   // 방송국 애니메이션 상태
   const [stationAnimationState, setStationAnimationState] = useState('idle'); // 'idle', 'slide-out', 'slide-in'
@@ -126,6 +183,7 @@ function App() {
   const [displayTimeInfo, setDisplayTimeInfo] = useState({ currentTime: '--:--', bufferedTime: '--:--' });
 
   const audioRef = useRef(null);
+  const playerRef = useRef(null);
   const MBC_PROXY = 'https://broken-field-5aad.qwer999.workers.dev/?url=';
 
   // Drag and drop sensor configuration
@@ -683,7 +741,8 @@ function App() {
       </DndContext>
 
       <div
-        className="fixed left-0 bottom-0 w-full px-6 pt-4  bg-[#000] flex flex-col justify-center z-[9999] transform transition-transform duration-500 ease-out"
+        ref={playerRef}
+        className="fixed left-0 bottom-0 w-full px-6 pt-4 bg-[#000] flex flex-col justify-center z-[9999]"
         style={{ background: 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, #000000 80px)' }}
       >
         <div className="flex justify-around p-4 mx-auto border-box px-8 mb-3 gap-4 rounded-full bg-[#2CFFAA] w-[220px] justify transition-all duration-300">
@@ -716,7 +775,7 @@ function App() {
           />
         </div>
         <div className="flex flex-row items-center text-[14px] gap-2 pb-5 transition-opacity duration-300 ">
-          <div className="flex flex-col mr-auto justify-start  items-start">
+          <div className="flex flex-col mr-auto justify-start items-start">
             <div className="mr-auto overflow-hidden flex flex-col">
               <strong
                 className={`text-white font-bold transition-colors duration-300 block whitespace-nowrap
@@ -730,17 +789,15 @@ function App() {
               >
                 {displayStation ? displayStation.name : '방송국을 선택하세요'}
               </strong>
+              {displayStation && displayStation.currentProgram && (
+                <div className="text-gray-400 text-sm overflow-hidden text-ellipsis whitespace-nowrap program-slide-in">
+                  {displayStation.currentProgram.title || '프로그램 정보 없음'}
+                </div>
+              )}
             </div>
             <div className="mr-2 overflow-hidden text-[12px]">
               <div
-                className={`text-gray-500 block whitespace-nowrap 
-                ${
-                  timeAnimationState === 'slide-out'
-                    ? 'station-slide-out'
-                    : timeAnimationState === 'slide-in'
-                    ? 'time-fade-in' // 시간 전용 페이드인 애니메이션 사용
-                    : 'station-idle'
-                }`}
+                className={`text-gray-500 block whitespace-nowrap time-slide-in`}
                 style={{ fontFamily: 'Lato, sans-serif' }}
               >
                 <span style={{ fontFamily: 'Lato, sans-serif' }} className="transition-colors duration-300 leading-tight tabular-nums">

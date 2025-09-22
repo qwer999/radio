@@ -796,10 +796,7 @@ function App() {
               )}
             </div>
             <div className="mr-2 overflow-hidden text-[12px]">
-              <div
-                className={`text-gray-500 block whitespace-nowrap time-slide-in`}
-                style={{ fontFamily: 'Lato, sans-serif' }}
-              >
+              <div className={`text-gray-500 block whitespace-nowrap time-slide-in`} style={{ fontFamily: 'Lato, sans-serif' }}>
                 <span style={{ fontFamily: 'Lato, sans-serif' }} className="transition-colors duration-300 leading-tight tabular-nums">
                   {displayTimeInfo.currentTime}
                 </span>{' '}

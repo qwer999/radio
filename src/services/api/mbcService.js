@@ -3,6 +3,7 @@
  */
 import { MBC_CHANNEL_TYPES } from '../../constants/channelTypes';
 import { getTodayDateString, formatTime } from '../../utils/dateUtils';
+import { getCachedSchedule, cacheSchedule, isCacheValid } from '../../utils/cacheUtils';
 
 /**
  * MBC 라디오 편성표를 가져오는 함수
@@ -15,6 +16,15 @@ export async function fetchMBCSchedule(date, channelType = MBC_CHANNEL_TYPES.FM)
     // 채널 타입 유효성 검사
     if (!Object.values(MBC_CHANNEL_TYPES).includes(channelType)) {
       throw new Error(`지원하지 않는 MBC 채널 유형입니다: ${channelType}`);
+    }
+
+    // 캐시된 데이터 확인
+    if (isCacheValid()) {
+      const cachedData = getCachedSchedule('mbc', channelType);
+      if (cachedData) {
+        console.log('MBC 편성표 캐시에서 로드됨:', channelType);
+        return cachedData;
+      }
     }
 
     // 날짜가 제공되면 URL에 포함, 아니면 제외
@@ -30,6 +40,11 @@ export async function fetchMBCSchedule(date, channelType = MBC_CHANNEL_TYPES.FM)
     }
 
     const scheduleData = await response.json();
+
+    // 데이터 캐싱
+    cacheSchedule('mbc', channelType, scheduleData);
+    console.log('MBC 편성표 API에서 로드 및 캐싱됨:', channelType);
+
     return scheduleData;
   } catch (error) {
     console.error('MBC 편성표 가져오기 오류:', error);

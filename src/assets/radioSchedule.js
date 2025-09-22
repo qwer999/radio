@@ -799,12 +799,9 @@ export async function enrichStationWithProgram(station) {
  * @returns {Promise<Array>} - 프로그램 정보가 추가된 방송국 목록
  */
 export async function enrichAllStations(stations = radioStations) {
-  const enrichedStations = [];
-
-  for (const station of stations) {
-    const enrichedStation = await enrichStationWithProgram(station);
-    enrichedStations.push(enrichedStation);
-  }
+  // 병렬로 모든 방송국 정보 가져오기
+  const promises = stations.map((station) => enrichStationWithProgram(station));
+  const enrichedStations = await Promise.all(promises);
 
   return enrichedStations;
 }

@@ -3,6 +3,7 @@
  */
 import { KBS_CHANNEL_TYPES, getKBSChannelName } from '../../constants/channelTypes';
 import { getTodayDateString, formatDateDisplay, formatTimeKBS } from '../../utils/dateUtils';
+import { isCacheValid, getCachedSchedule, cacheSchedule } from '../../utils/cacheUtils';
 
 /**
  * KBS 라디오 편성표를 가져오는 함수
@@ -20,6 +21,15 @@ export async function fetchKBSSchedule(channelCode = KBS_CHANNEL_TYPES.HAPPY_FM,
     // 날짜 파라미터 생략 시 오늘 날짜 사용
     const scheduleDate = date || getTodayDateString();
 
+    // 캐시된 데이터 확인
+    if (isCacheValid()) {
+      const cachedData = getCachedSchedule('kbs', channelCode);
+      if (cachedData) {
+        console.log('KBS 편성표 캐시에서 로드됨:', channelCode);
+        return cachedData;
+      }
+    }
+
     // KBS API URL
     const url = `https://static.api.kbs.co.kr/mediafactory/v1/schedule/weekly?&rtype=json&local_station_code=00&channel_code=${channelCode}`;
 
@@ -36,7 +46,13 @@ export async function fetchKBSSchedule(channelCode = KBS_CHANNEL_TYPES.HAPPY_FM,
 
     // 스케줄 데이터가 있으면 해당 날짜의 schedules 배열 반환
     if (scheduleData.length > 0 && scheduleData[0].schedules) {
-      return scheduleData[0].schedules;
+      const filteredSchedules = scheduleData[0].schedules;
+
+      // 데이터 캐싱
+      cacheSchedule('kbs', channelCode, filteredSchedules);
+      console.log('KBS 편성표 API에서 로드 및 캐싱됨:', channelCode);
+
+      return filteredSchedules;
     }
 
     return [];

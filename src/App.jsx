@@ -6,6 +6,7 @@ import ResetPlaylistButton from './components/ResetPlaylistButton';
 import { radioStations as defaultStations } from './assets/radioStations';
 import { enrichAllStations } from './assets/radioSchedule';
 import AudioPlayer from './AudioPlayer';
+import { isCacheValid, clearAllCaches } from './utils/cacheUtils';
 import './App.css';
 import {
   DndContext,
@@ -88,6 +89,12 @@ function App() {
   useEffect(() => {
     async function loadSchedules() {
       try {
+        // 캐시 유효성 검사 - 캐시가 유효하지 않으면 모든 캐시 초기화
+        if (!isCacheValid()) {
+          console.log('캐시가 만료되었습니다. 모든 캐시를 초기화합니다.');
+          clearAllCaches();
+        }
+
         // 방송국에 현재 프로그램 정보 추가
         const enrichedStations = await enrichAllStations(stations);
         setStations(enrichedStations);

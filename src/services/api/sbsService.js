@@ -3,6 +3,7 @@
  */
 import { SBS_CHANNEL_TYPES, getSBSChannelName } from '../../constants/channelTypes';
 import { getTodayDateString, formatDateDisplay, getDateFromString, getDateParts } from '../../utils/dateUtils';
+import { isCacheValid, getCachedSchedule, cacheSchedule } from '../../utils/cacheUtils';
 
 /**
  * SBS 라디오 편성표를 가져오는 함수
@@ -15,6 +16,15 @@ export async function fetchSBSSchedule(channelType = SBS_CHANNEL_TYPES.POWER_FM,
     // 채널 유형 유효성 검사
     if (!Object.values(SBS_CHANNEL_TYPES).includes(channelType)) {
       throw new Error(`지원하지 않는 SBS 채널 유형입니다: ${channelType}`);
+    }
+
+    // 캐시된 데이터 확인
+    if (isCacheValid()) {
+      const cachedData = getCachedSchedule('sbs', channelType);
+      if (cachedData) {
+        console.log('SBS 편성표 캐시에서 로드됨:', channelType);
+        return cachedData;
+      }
     }
 
     // 날짜 파라미터 생략 시 오늘 날짜 사용
@@ -31,6 +41,10 @@ export async function fetchSBSSchedule(channelType = SBS_CHANNEL_TYPES.POWER_FM,
     }
 
     const data = await response.json();
+
+    // 데이터 캐싱
+    cacheSchedule('sbs', channelType, data);
+    console.log('SBS 편성표 API에서 로드 및 캐싱됨:', channelType);
 
     return data;
   } catch (error) {

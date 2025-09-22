@@ -184,6 +184,16 @@ function App() {
 
   const audioRef = useRef(null);
   const playerRef = useRef(null);
+  const [playerInfoAnim, setPlayerInfoAnim] = useState('');
+  // 하단 방송 정보(이름/프로그램/시간) 슬라이드인 애니메이션 적용
+  useEffect(() => {
+    // 방송국, 프로그램명, 시간 등 주요 정보가 바뀔 때마다 애니메이션 트리거
+    if (displayStation) {
+      setPlayerInfoAnim('player-info-slide-in');
+      const timeout = setTimeout(() => setPlayerInfoAnim(''), 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [displayStation?.id, displayStation?.currentProgram?.title, displayTimeInfo.currentTime]);
   const MBC_PROXY = 'https://broken-field-5aad.qwer999.workers.dev/?url=';
 
   // Drag and drop sensor configuration
@@ -775,7 +785,7 @@ function App() {
           />
         </div>
         <div className="flex flex-row items-center text-[14px] gap-2 pb-5 transition-opacity duration-300 ">
-          <div className="flex flex-col mr-auto justify-start items-start">
+          <div className={`flex flex-col mr-auto justify-start items-start ${playerInfoAnim}`}>
             <div className="mr-auto overflow-hidden flex flex-col">
               <strong
                 className={`text-white font-bold transition-colors duration-300 block whitespace-nowrap
